@@ -1,0 +1,67 @@
+/*
+ * passforge.js
+ */
+
+/*
+ * Convert a hexadecimal string to a raw ascii byte stream.
+ */
+function hex2rstr(input) {
+	var output = "";
+	var len = input.length;
+	var ibyte;
+	for (var i = 0; i < len; i += 2) {
+		ibyte = (hexcode_to_int(input.charCodeAt(i)) << 4)
+				| ((i + 1 < len) ? hexcode_to_int(input.charCodeAt(i+1)) : 0);
+		output += String.fromCharCode(ibyte);
+	}
+	return output
+}
+
+function hexcode_to_int(code) {
+	// 0-9
+	if (code <= 57 && code >= 48) {
+		return code - 48;
+	}
+
+	// uppercase A-F
+	if (code <= 70 && code >= 65) {
+		return code - 65 + 10;
+	}
+
+	// lowercase a-f
+	if (code <= 102 && code >= 97) {
+		return code - 97 + 10;
+	}
+
+	return NaN;
+}
+
+function hex2b64(input) {
+	return rstr2b64(hex2rstr(input));
+}
+
+var passforge = passforge || {};
+
+passforge.length = 8;
+passforge.iterations = 1000;
+passforge.require_digits = true;
+passforge.status_callback = function() {};
+passforge.return_callback = function() { console.log("return_callback"); };
+
+passforge.pwgen = function(nickname, master, salt, asynchronous) {
+	// round up bytes required
+	var bytes = Math.ceil(passforge.length * 3 / 4);
+
+	// initialize PBKDF2 module
+	var pbkdf2 = new PBKDF2(master + nickname, salt, this.iterations, bytes);
+
+	// derive key
+	if (asynchronous) {
+		pbkdf2.deriveKey(this.status_callback, this.return_callback);
+		return true;
+	} else {
+		var key = pbkdf2.deriveKeySync();
+		this.return_callback(key);
+		return key;
+	}
+};
