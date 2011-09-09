@@ -13,10 +13,13 @@
 			border: 1px solid black;
 		}
 	</style>
-	<script type="text/javascript" src="./sha1.js"></script>
-	<script type="text/javascript" src="./pbkdf2.js"></script>
+	<script type="text/javascript" src="./crypto-sha1-hmac-pbkdf2.js"></script>
 	<script type="text/javascript" src="./passforge.js"></script>
+	<script type="text/javascript" src="./pbkdf2.js"></script>
+	<script type="text/javascript" src="./sha1.js"></script>
 	<script>
+		var start
+
 		function set_progress(out_of_100) {
 			var progress = document.getElementById('progress');
 			progress.style.width = out_of_100 + "%";
@@ -30,7 +33,7 @@
 		};
 
 		var result_callback = function(key) {
-			var delta = mypbkdf2.getElapsed();
+			var delta = (new Date() - start) / 1000;
 			var text = "Derived key: " + key + " (in " + delta + "s)"
 			text += " =&gt; " + hex2b64(key);
 			document.getElementById("status").innerHTML = text;
@@ -46,16 +49,11 @@
 			var form = document.getElementById('form');
 			form.submit.disabled = true;
 			start = new Date();
-			mypbkdf2 = new PBKDF2(form.password.value,
-									  form.salt.value,
-									  form.iterations.value,
-									  form.bytes.value,
-									  form.status_interval.value);
-			if (form.progress.checked) {
-				mypbkdf2.deriveKey(status_callback, result_callback);
-			} else {
-				result_callback(mypbkdf2.deriveKeySync());
-			}
+			var key = Crypto.PBKDF2(form.password.value,
+									form.salt.value,
+									form.bytes.value,
+									{iterations: form.iterations.value});
+			result_callback(key);
 		}
 
 	</script>
