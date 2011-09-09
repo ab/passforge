@@ -1,12 +1,13 @@
 /*
  * JavaScript implementation of Password-Based Key Derivation Function 2
- * (PBKDF2) as defined in RFC 2898.
+ * (PBKDF2) as defined in RFC 2898, with tests from RFC 3962 and RFC 6070.
  *
  * Version 2.0
- * 2.0 adds a synchronous mode, a test suite, and some cosmetic changes.
  * Copyright (c) 2011, Andy Brody
+ * Add a synchronous mode, a test suite, and some cosmetic changes.
  *
- * Version 1.1 Copyright (c) 2007, Parvez Anandam
+ * Version 1.1
+ * Copyright (c) 2007, Parvez Anandam
  * http://anandam.name/pbkdf2
  *
  * Distributed under the BSD license
