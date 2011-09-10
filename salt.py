@@ -43,6 +43,13 @@ def debug(data):
     content_type('text/plain')
     print data
 
+def get_user(name):
+    rows = c.execute('select * from salts where user=%s', name) > 0
+    if rows:
+        return c.fetchone()
+    else:
+        return None
+
 # POST/GET parameters
 form = cgi.FieldStorage()
 if 'action' not in form:
@@ -52,18 +59,31 @@ if form['action'].value == 'get':
     if 'user' not in form:
         error('Must provide user.')
 
-    rows = c.execute('select * from salts where user=%s', form['user'].value)
-    if not rows:
+    user = get_user(form['user'].value)
+    if not user:
         error('No such user.')
 
-    json_return({'salt': c.fetchone()['salt']})
+    json_return({'salt': user['salt']})
+
 elif form['action'].value == 'create':
     if 'user' not in form:
         error('Must provide user.')
+
+    username = form['user'].value
+
+    if get_user(username):
+        error('Username already taken.')
+
     if 'salt' in form:
         salt = form['salt'].value
     else:
         salt = base64.b64encode(os.urandom(config.salt_bytes))
+
+    query = 'insert into salts (`user`, `salt`) VALUES (%s, %s)'
+    c.execute(query, (username, salt))
+
+    json_return({'salt': salt})
+
 content_type('text/plain')
 
 c.execute('select * from salts');
