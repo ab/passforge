@@ -1,0 +1,55 @@
+<html>
+<head>
+	<title>PassForge self-test</title>
+	<meta name="viewport" content="width=device-width" />
+	<style type="text/css">
+		#progress {
+			width: 0px;
+			height: 100%;
+			background-color: #729fcf;
+		}
+		#progressContainer {
+			width: 200px;
+			height: 8px;
+			border: 1px solid black;
+		}
+	</style>
+	<script type="text/javascript" src="./sha1.js"></script>
+	<script type="text/javascript" src="./pbkdf2.js"></script>
+	<script type="text/javascript" src="./passforge.js"></script>
+	<script>
+		function run() {
+			document.getElementById('status').innerHTML = "Running...";
+			document.getElementById('test').disabled = true;
+			setTimeout(run_test, 0);
+		}
+
+		function run_test(extra) {
+			var start = new Date();
+			var times = document.getElementById('times');
+			var status = document.getElementById('status');
+
+			var result = pbkdf2_test.self_test(extra);
+			if (result) {
+				status.innerHTML = "OK! Test succeeded.";
+			} else {
+				status.innerHTML = "FAIL! Not all tests succeeded."
+						+ " Check the Javascript console for details.";
+			}
+			var delta = (new Date() - start) / 1000;
+			times.innerHTML = "Completed in " + delta + "s.<br />" + times.innerHTML;
+			document.getElementById('test').disabled = false;
+		}
+	</script>
+</head>
+<body>
+	<div style="width: 550px">
+		This test verifies that the javascript implementations of SHA1 and
+		PBKDF2 are working correctly by checking a few standard inputs against
+		their expected output.
+	</div>
+	<input type="submit" id="test" value="test" onclick="run(); return false" />
+	<div id="status"></div><br />
+	<div id="times"></div>
+</body>
+</html>
