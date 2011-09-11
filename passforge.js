@@ -42,11 +42,34 @@ function hex2b64(input) {
 
 var passforge = passforge || {};
 
+/* User-configurable parameters and callbacks */
 passforge.length = 8;
 passforge.iterations = 1000;
-passforge.require_digits = true;
+passforge.require_digits = false; // TODO (notimplemented)
 passforge.status_callback = function() {};
-passforge.return_callback = function() { console.log("return_callback"); };
+passforge.return_callback = function(key, elapsed) {
+	console.log("[default return_callback]");
+	console.log("Derived key " + key + " in " + elapsed + "s");
+};
+
+/* A wrapper function to truncate the derived key to the correct length. */
+passforge.apply_key_policy = function(key, elapsed) {
+	var b64key = hex2b64(key);
+	b64key = b64key.substring(0, passforge.length);
+	if (passforge.require_digits) {
+		// TODO
+	}
+	return passforge.return_callback(b64key, elapsed);
+}
+
+
+passforge.config = function(pass_length, iterations, status_callback,
+		return_callback) {
+	passforge.length = pass_length;
+	passforge.iterations = iterations;
+	passforge.status_callback = status_callback;
+	passforge.return_callback = return_callback;
+}
 
 passforge.pwgen = function(nickname, master, salt, asynchronous) {
 	// round up bytes required
@@ -58,11 +81,9 @@ passforge.pwgen = function(nickname, master, salt, asynchronous) {
 
 	// derive key
 	if (asynchronous) {
-		pbkdf2.deriveKey(passforge.status_callback, passforge.return_callback);
+		pbkdf2.deriveKey(passforge.status_callback, passforge.apply_key_policy);
 		return true;
 	} else {
-		var key = pbkdf2.deriveKeySync();
-		passforge.return_callback(key);
-		return key;
+		return pbkdf2.deriveKeySync();
 	}
 };

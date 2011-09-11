@@ -1,0 +1,91 @@
+<html>
+<head>
+	<title>PassForge password generator</title>
+	<meta name="viewport" content="width=device-width" />
+	<style type="text/css">
+		#progress {
+			width: 0px;
+			height: 100%;
+			background-color: #729fcf;
+		}
+		#progressContainer {
+			width: 200px;
+			height: 8px;
+			border: 1px solid black;
+		}
+	</style>
+	<script type="text/javascript" src="./sha1.js"></script>
+	<script type="text/javascript" src="./pbkdf2.js"></script>
+	<script type="text/javascript" src="./passforge.js"></script>
+	<script>
+		function set_progress(out_of_100) {
+			var progress = document.getElementById('progress');
+			progress.style.width = out_of_100 + "%";
+		}
+
+
+		var status_callback = function(percent_done) {
+			percent_done = Math.round(percent_done);
+			document.getElementById("status").innerHTML = "Computed " + percent_done + "%";
+			set_progress(percent_done);
+		};
+
+		var result_callback = function(key, elapsed) {
+			var text = "Derived key: " + key + " (in " + elapsed + "s)";
+			document.getElementById("status").innerHTML = text;
+
+			var form = document.getElementById('form');
+			document.getElementById('form').submit.disabled = false;
+		};
+
+		function run() {
+			var form = document.getElementById('form');
+			form.submit.disabled = true;
+
+			passforge.length = form.length.value;
+			passforge.iterations = form.iterations.value;
+			passforge.status_callback = status_callback;
+			passforge.return_callback = result_callback;
+
+			passforge.pwgen(form.nickname.value,
+			                form.password.value,
+					        form.salt.value,
+							form.progress.checked);
+		}
+
+	</script>
+</head>
+<body>
+	<form id="form">
+		<table>
+			<tr>
+				<td>password</td>
+				<td><input type="text" name="password" value="mypassword" /></td>
+			</tr>
+			<tr>
+				<td>nickname</td>
+				<td><input type="text" name="nickname" value="AMZN" /></td>
+			</tr>
+			<tr>
+				<td>salt</td>
+				<td><input type="text" name="salt" value="saltines" /></td>
+			</tr>
+			<tr>
+				<td>iterations</td>
+				<td><input type="text" name="iterations" value="1000" /></td>
+			</tr>
+			<tr>
+				<td>length</td>
+				<td><input type="text" name="length" value="10" /></td>
+			</tr>
+		</table>
+		<label><input type="checkbox" name="progress" checked=1/>show progress</label>
+
+		<br /><br />
+		<input type="submit" name="submit" value="Create" onclick="run(); return false" />
+	</form>
+		<div id="progressContainer"><div id="progress">&nbsp;</div></div>
+	<br />
+	<div id="status"></div>
+</body>
+</html>

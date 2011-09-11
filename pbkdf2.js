@@ -45,8 +45,8 @@
  *    var asynchronous = true;
  *    var mypbkdf2 = new PBKDF2("mypassword", "saltines", 1000, 16);
  *    var status_callback = function(percent_done) {
- *    	  percent_done = Math.round(percent_done);
- *    	  var text = "Computed " + percent_done + "%";
+ *        percent_done = Math.round(percent_done);
+ *        var text = "Computed " + percent_done + "%";
  *        document.getElementById("status").innerHTML = text;
  *    };
  *    var result_callback = function(key) {
@@ -63,7 +63,9 @@
  *
  */
 
-function PBKDF2(password, salt, num_iterations, num_bytes, iters_per_chunk) {
+function PBKDF2(password, salt, num_iterations, num_bytes, options) {
+	options = options || {};
+
     // Remember the password and salt
     var m_bpassword = rstr2binb(password);
     var m_salt = salt;
@@ -72,11 +74,11 @@ function PBKDF2(password, salt, num_iterations, num_bytes, iters_per_chunk) {
     var m_total_iterations = num_iterations;
 
     // Run iterations in chunks instead of all at once, so as to not block.
-	// The size of chunk defaults to 1/10 of the iterations. This can be
-	// adjusted for slower or faster machines as needed.
+    // The size of chunk defaults to 1/10 of the iterations. This can be
+    // adjusted for slower or faster machines as needed.
     var m_iterations_in_chunk = num_iterations / 10;
-    if (iters_per_chunk) {
-        m_iterations_in_chunk = iters_per_chunk;
+    if (options.iters_per_chunk) {
+        m_iterations_in_chunk = options.iters_per_chunk;
     }
 
     // Iteration counter
@@ -224,16 +226,15 @@ function PBKDF2(password, salt, num_iterations, num_bytes, iters_per_chunk) {
             
                 var tmp = binb2hex(m_buffer);
                 m_key += tmp.substr(0, (m_key_length -
-        		                (m_total_blocks - 1) * m_hash_length) * 2 );
+                                (m_total_blocks - 1) * m_hash_length) * 2 );
                 
                 m_elapsed = (new Date() - m_start) / 1000;
 
-                if (m_asynchronous) {
-                    // Call the result callback function
-                    m_result_func(m_key);
-                } else {
-                    return m_key;
-                }
+                // Call the result callback function
+                m_result_func(m_key, m_elapsed);
+
+                // Return the key in case anyone is waiting on the value
+                return m_key;
             }
         }
     }
