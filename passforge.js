@@ -53,15 +53,16 @@ passforge.pwgen = function(nickname, master, salt, asynchronous) {
 	var bytes = Math.ceil(passforge.length * 3 / 4);
 
 	// initialize PBKDF2 module
-	var pbkdf2 = new PBKDF2(master + nickname, salt, this.iterations, bytes);
+	var pbkdf2 = new PBKDF2(master + nickname, salt, passforge.iterations,
+			bytes);
 
 	// derive key
 	if (asynchronous) {
-		pbkdf2.deriveKey(this.status_callback, this.return_callback);
+		pbkdf2.deriveKey(passforge.status_callback, passforge.return_callback);
 		return true;
 	} else {
 		var key = pbkdf2.deriveKeySync();
-		this.return_callback(key);
+		passforge.return_callback(key);
 		return key;
 	}
 };
