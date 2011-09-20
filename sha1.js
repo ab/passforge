@@ -15,10 +15,9 @@ var hexcase = 0;  /* hex output format. 0 - lowercase; 1 - uppercase        */
 var b64pad  = "="; /* base-64 pad character. "=" for strict RFC compliance   */
 
 /*
- * Standard and URL-safe variants of base64.
-var b64tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+ * Table of the base64 characters.
  */
-var b64tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+var b64tab = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 /*
  * These are the functions you'll usually want to call

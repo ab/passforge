@@ -55,7 +55,13 @@ passforge.return_callback = function(key, elapsed) {
 /* A wrapper function to truncate the derived key to the correct length. */
 passforge.apply_key_policy = function(key, elapsed) {
 	var b64key = hex2b64(key);
+
+	// truncate to desired length
 	b64key = b64key.substring(0, passforge.length);
+
+	// use a url-safe variant of base64
+	b64key = b64key.replace('+', '-').replace('/', '_');
+
 	if (passforge.require_digits) {
 		// TODO
 	}
