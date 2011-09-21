@@ -21,6 +21,7 @@
 		function run() {
 			document.getElementById('status').innerHTML = "Running...";
 			document.getElementById('test').disabled = true;
+			document.getElementById('results').innerHTML = '';
 			setTimeout(run_test, 0);
 		}
 
@@ -28,8 +29,9 @@
 			var start = new Date();
 			var times = document.getElementById('times');
 			var status = document.getElementById('status');
+			var table = document.getElementById('results')
 
-			var result = pbkdf2_test.self_test(extra);
+			var result = pbkdf2_test.self_test(extra, table);
 			if (result) {
 				status.innerHTML = "OK! Test succeeded.";
 			} else {
@@ -51,5 +53,6 @@
 	<input type="submit" id="test" value="test" onclick="run(); return false" />
 	<div id="status"></div><br />
 	<div id="times"></div>
+	<table id="results"></table>
 </body>
 </html>

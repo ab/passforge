@@ -91,6 +91,7 @@ passforge.pwgen = function(nickname, master, salt, asynchronous) {
 		pbkdf2.deriveKey(passforge.status_callback, passforge.apply_key_policy);
 		return true;
 	} else {
-		return pbkdf2.deriveKeySync();
+		pbkdf2.deriveKeySync(passforge.apply_key_policy);
+		return true;
 	}
 };

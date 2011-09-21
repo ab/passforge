@@ -34,8 +34,8 @@
  * the first is used to provide status on the computation, the second
  * is called with the result of the computation (the generated key in hex).
  *
- * The method deriveKeySync operates synchronously. It takes no parameters and
- * returns the generated key in hex.
+ * The method deriveKeySync operates synchronously. It takes an optional return
+ * callback function and also returns the generated key in hex.
  *
  * Example of use:
  *
@@ -49,14 +49,14 @@
  *        var text = "Computed " + percent_done + "%";
  *        document.getElementById("status").innerHTML = text;
  *    };
- *    var result_callback = function(key) {
+ *    var result_callback = function(key, elapsed_seconds) {
  *        document.getElementById("status").innerHTML = "Derived key: " + key;
  *    };
  *
  *    if (asynchronous) {
  *        mypbkdf2.deriveKey(status_callback, result_callback);
  *    } else {
- *        result_callback(mypbkdf2.deriveKeySync());
+ *        mypbkdf2.deriveKeySync(result_callback);
  *    }
  *    </script>
  *    <div id="status"></div>
@@ -64,7 +64,7 @@
  */
 
 function PBKDF2(password, salt, num_iterations, num_bytes, options) {
-	options = options || {};
+    options = options || {};
 
     // Remember the password and salt
     var m_bpassword = rstr2binb(password);
@@ -138,6 +138,9 @@ function PBKDF2(password, salt, num_iterations, num_bytes, options) {
 
     // Starts the computation asynchronously
     this.deriveKey = function(status_callback, result_callback) {
+    if (!result_callback) {
+        throw "result_callback is required";
+    }
         m_status_func = status_callback;
         m_result_func = result_callback;
         m_asynchronous = true;
@@ -148,9 +151,10 @@ function PBKDF2(password, salt, num_iterations, num_bytes, options) {
     }
 
     // Synchronous computation
-    this.deriveKeySync = function() {
+    this.deriveKeySync = function(result_callback) {
         m_asynchronous = false;
         m_start = new Date();
+        m_result_func = result_callback || function() {};
 
         while (m_iterations_done < m_total_iterations
                 || m_current_block < m_total_blocks) {
@@ -310,7 +314,7 @@ pbkdf2_test.vectors_rfc3962 = new Array(
 /*
  * Run a round of self tests on a list of vectors.
  */
-pbkdf2_test.do_test = function(vectors) {
+pbkdf2_test.do_test = function(vectors, table_elem) {
     var v;
     var derived;
     var succeeded = 0;
@@ -322,8 +326,24 @@ pbkdf2_test.do_test = function(vectors) {
         if (derived === v[4]) {
             console.log("PASS in " + mypbkdf2.getElapsed() + "s");
             succeeded++;
+
         } else {
             console.log("!! FAIL: got " + derived);
+        }
+
+        if (table_elem && v) {
+            var row = document.createElement('tr');
+            var inner = '';
+            for (var j = 0; j < v.length; j++) {
+                inner += '<td>' + v[j] + '</td>';
+            }
+            if (derived === v[4]) {
+                inner += '<td class="success">OK</td>';
+            } else {
+                inner += '<td class="failure">FAIL</td>';
+            }
+            row.innerHTML = inner;
+            table_elem.appendChild(row);
         }
     }
 
@@ -337,14 +357,19 @@ pbkdf2_test.do_test = function(vectors) {
  * The vectors are specified by RFC 6070 and RFC 3962.
  * Tests that may take a long time are not run unless include_extra is True.
  */
-pbkdf2_test.self_test = function(include_extra) {
-    var result = this.do_test(this.vectors_rfc6070);
+pbkdf2_test.self_test = function(include_extra, table_elem) {
 
-    result = result && this.do_test(this.vectors_rfc3962);
+    if (table_elem) {
+        table_elem.innerHTML = "<tr><th>password</th><th>salt</th><th>iterations</th><th>bytes</th><th>result</th><th>pass</th></tr>";
+    }
+
+    var result = this.do_test(this.vectors_rfc6070, table_elem);
+
+    result = result && this.do_test(this.vectors_rfc3962, table_elem);
 
     if (include_extra) {
         console.log("This test will take ~9 minutes on a 6000 BogoMips CPU.");
-        result = result && this.do_test(this.vectors_rfc6070_extra);
+        result = result && this.do_test(this.vectors_rfc6070_extra, table_elem);
     }
 
     if (result) {
