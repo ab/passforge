@@ -12,29 +12,66 @@
 			width: 200px;
 			height: 8px;
 			border: 1px solid black;
+			margin-bottom: 0.5em;
+		}
+		#key {
+			width: 200px;
+		}
+		#time {
+			margin-left: 1em;
+			color: #666;
+		}
+		#iterations {
+			width: 7em;
 		}
 	</style>
 	<script type="text/javascript" src="./sha1.js"></script>
 	<script type="text/javascript" src="./pbkdf2.js"></script>
 	<script type="text/javascript" src="./passforge.js"></script>
 	<script>
+		function toggle_progress(elem) {
+			var progress = document.getElementById('progressContainer');
+			if (elem.checked) {
+				//progress.style.visibility = "visible";
+				progress.style.display = "block";
+			} else {
+				//progress.style.visibility = "hidden";
+				progress.style.display = "none";
+			}
+		}
+
 		function set_progress(out_of_100) {
 			var progress = document.getElementById('progress');
 			progress.style.width = out_of_100 + "%";
 		}
 
+		function set_iters(elem) {
+			var iters = document.getElementById('iterations')
+			if (elem.value == 'custom') {
+				iters.disabled = false;
+				iters.focus();
+				iters.select();
+			} else {
+				iters.disabled = true;
+				iters.value = elem.value;
+			}
+		}
+
 
 		var status_callback = function(percent_done) {
-			percent_done = Math.round(percent_done);
-			document.getElementById("status").innerHTML = "Computed " + percent_done + "%";
 			set_progress(percent_done);
 		};
 
 		var result_callback = function(key, elapsed) {
-			var text = "Derived key: " + key + " (in " + elapsed + "s)";
-			document.getElementById("status").innerHTML = text;
+			set_progress(100);
+			var text = "created in " + elapsed + "s";
+			document.getElementById("time").innerHTML = text;
 
-			var form = document.getElementById('form');
+			var keyInput = document.getElementById('key');
+			keyInput.value = key;
+			keyInput.focus();
+			keyInput.select();
+
 			document.getElementById('form').submit.disabled = false;
 		};
 
@@ -71,21 +108,32 @@
 				<td><input type="text" name="salt" value="saltines" /></td>
 			</tr>
 			<tr>
-				<td>iterations</td>
-				<td><input type="text" name="iterations" value="1000" /></td>
+				<td>strengthening factor</td>
+				<td>
+					<select name="strengthening" onchange="set_iters(this)">
+						<option value="1000">low</option>
+						<option value="4097" selected=1>medium</option>
+						<option value="10000">high</option>
+						<option value="100000">paranoid</option>
+						<option value="custom">custom</option>
+					</select>
+					<input type="text" id="iterations" name="iterations" value="4097" disabled=1 />
+				</td>
 			</tr>
 			<tr>
 				<td>length</td>
 				<td><input type="text" name="length" value="10" /></td>
 			</tr>
 		</table>
-		<label><input type="checkbox" name="progress" checked=1/>show progress</label>
+		<label><input type="checkbox" name="progress" checked=1 onclick="toggle_progress(this)" />show progress</label>
 
-		<br /><br />
+		<br />
 		<input type="submit" name="submit" value="Create" onclick="run(); return false" />
-	</form>
+		<br /><br />
 		<div id="progressContainer"><div id="progress">&nbsp;</div></div>
-	<br />
-	<div id="status"></div>
+		<div id="status"></div>
+		<input type="text" id="key" />
+		<div id="time"></div>
+	</form>
 </body>
 </html>
