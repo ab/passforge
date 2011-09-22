@@ -103,7 +103,7 @@ function PBKDF2(password, salt, num_iterations, num_bytes, options) {
 
     // This is where the result of the iterations gets stored
     var m_buffer = new Array(0x0,0x0,0x0,0x0,0x0);
-    
+
     // The result
     var m_key = "";
 
@@ -169,7 +169,7 @@ function PBKDF2(password, salt, num_iterations, num_bytes, options) {
         var iterations = m_iterations_in_chunk;
         if (m_total_iterations - m_iterations_done < m_iterations_in_chunk)
             iterations = m_total_iterations - m_iterations_done;
-            
+
         for (var i=0; i<iterations; i++) {
             // compute HMAC-SHA1
             if (m_iterations_done == 0) {
@@ -212,9 +212,9 @@ function PBKDF2(password, salt, num_iterations, num_bytes, options) {
         } else {
             if (m_current_block < m_total_blocks) {
                 // Compute the next block (T_i in RFC 2898)
-                
+
                 m_key += binb2hex(m_buffer);
-            
+
                 m_current_block++;
                 m_buffer = new Array(0x0,0x0,0x0,0x0,0x0);
                 m_iterations_done = 0;
@@ -227,11 +227,11 @@ function PBKDF2(password, salt, num_iterations, num_bytes, options) {
                 }
             } else {
                 // We've computed the final block T_l; we're done.
-            
+
                 var tmp = binb2hex(m_buffer);
                 m_key += tmp.substr(0, (m_key_length -
                                 (m_total_blocks - 1) * m_hash_length) * 2 );
-                
+
                 m_elapsed = (new Date() - m_start) / 1000;
 
                 // Call the result callback function
