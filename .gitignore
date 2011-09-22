@@ -3,3 +3,4 @@
 *.swx
 *.pyc
 config.py
+etc/pbkdf2
