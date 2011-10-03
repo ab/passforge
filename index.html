@@ -22,7 +22,7 @@
 			color: #666;
 		}
 		#iterations {
-			width: 7em;
+			width: 5.5em;
 		}
 	</style>
 	<script type="text/javascript" src="./sha1.js"></script>
@@ -97,7 +97,7 @@
 		<table>
 			<tr>
 				<td>password</td>
-				<td><input type="text" name="password" value="mypassword" /></td>
+				<td><input type="password" name="password" value="mypassword" /></td>
 			</tr>
 			<tr>
 				<td>nickname</td>
@@ -111,13 +111,12 @@
 				<td>strengthening factor</td>
 				<td>
 					<select name="strengthening" onchange="set_iters(this)">
-						<option value="1000">low</option>
-						<option value="4097" selected=1>medium</option>
-						<option value="10000">high</option>
-						<option value="100000">paranoid</option>
+						<option value="4097">low</option>
+						<option value="10000" selected=1>medium</option>
+						<option value="100000">high</option>
 						<option value="custom">custom</option>
 					</select>
-					<input type="text" id="iterations" name="iterations" value="4097" disabled=1 />
+					<input type="text" id="iterations" name="iterations" value="10000" disabled=1 />
 				</td>
 			</tr>
 			<tr>
