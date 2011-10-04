@@ -18,7 +18,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     if len(sys.argv) > 4:
-        length = sys.argv[4]
+        length = int(sys.argv[4])
     else:
         length = 16
     print generate(sys.argv[1], sys.argv[2], int(sys.argv[3]), length)
