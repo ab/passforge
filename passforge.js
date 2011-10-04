@@ -2,59 +2,19 @@
  * passforge.js
  */
 
-/*
- * Convert a hexadecimal string to a raw ascii byte stream.
- */
-function hex2rstr(input) {
-    var output = "";
-    var len = input.length;
-    var ibyte;
-    for (var i = 0; i < len; i += 2) {
-        ibyte = (hexcode_to_int(input.charCodeAt(i)) << 4)
-                | ((i + 1 < len) ? hexcode_to_int(input.charCodeAt(i+1)) : 0);
-        output += String.fromCharCode(ibyte);
-    }
-    return output
-}
-
-function hexcode_to_int(code) {
-    // 0-9
-    if (code <= 57 && code >= 48) {
-        return code - 48;
-    }
-
-    // uppercase A-F
-    if (code <= 70 && code >= 65) {
-        return code - 65 + 10;
-    }
-
-    // lowercase a-f
-    if (code <= 102 && code >= 97) {
-        return code - 97 + 10;
-    }
-
-    return NaN;
-}
-
-function hex2b64(input) {
-    return rstr2b64(hex2rstr(input));
-}
-
 var passforge = passforge || {};
 
-/* User-configurable parameters and callbacks */
-passforge.length = 8;
-passforge.iterations = 1000;
-passforge.require_digits = false; // TODO (notimplemented)
-passforge.status_callback = function() {};
-passforge.return_callback = function(key, elapsed) {
-    console.log("[default return_callback]");
-    console.log("Derived key " + key + " in " + elapsed + "s");
-};
+passforge.config = function(length, iterations, status_callback, result_callback) {
+    passforge.length = length || 8;
+    passforge.iterations = iterations || 1000;
+    passforge.require_digits = false; // TODO (notimplemented)
+    passforge.status_callback = status_callback;
+    passforge.result_callback = result_callback;
+}
 
 /* A wrapper function to truncate the derived key to the correct length. */
-passforge.apply_key_policy = function(key, elapsed) {
-    var b64key = hex2b64(key);
+passforge.apply_key_policy = function(key) {
+    var b64key = sjcl.codec.base64url.fromBits(key);
 
     // truncate to desired length
     b64key = b64key.substring(0, passforge.length);
@@ -66,32 +26,54 @@ passforge.apply_key_policy = function(key, elapsed) {
         console.log('require_digits not yet implemented');
         // TODO
     }
-    return passforge.return_callback(b64key, elapsed);
+    return b64key;
 }
 
-
-passforge.config = function(pass_length, iterations, status_callback,
-        return_callback) {
-    passforge.length = pass_length;
-    passforge.iterations = iterations;
-    passforge.status_callback = status_callback;
-    passforge.return_callback = return_callback;
-}
-
-passforge.pwgen = function(nickname, master, salt, asynchronous) {
+passforge.pwgen = function(master, nickname, salt, asynchronous) {
     // round up bytes required
     var bytes = Math.ceil(passforge.length * 3 / 4);
 
-    // initialize PBKDF2 module
-    var pbkdf2 = new PBKDF2(master + nickname, salt, passforge.iterations,
-            bytes);
+    master = sjcl.codec.utf8String.toBits(master);
+    nickname = sjcl.codec.utf8String.toBits(nickname);
+    salt = sjcl.codec.utf8String.toBits(salt);
 
-    // derive key
+    // salt = nickname XOR salt
+    for (var i = 0; i < nickname.length; i++) {
+        salt[i] ^= nickname[i];
+    }
+
+    var start = new Date();
+
     if (asynchronous) {
-        pbkdf2.deriveKey(passforge.status_callback, passforge.apply_key_policy);
-        return true;
+
+        passforge.start = start;
+
+        var result_handler = function(derivedKey) {
+            var elapsed = (new Date() - passforge.start) / 1000;
+            derivedKey = passforge.apply_key_policy(derivedKey);
+            passforge.result_callback(derivedKey, elapsed);
+        }
+
+        if (!passforge.result_callback) {
+            result_handler = null;
+        }
+
+        // derive key with PBKDF2 asynchronously
+        var p = new sjcl.misc.pbkdf2async(master, salt, passforge.iterations,
+                bytes * 8, sjcl.misc.hmac_sha1, passforge.status_callback,
+                result_handler);
+        return p.deriveKey();
+
     } else {
-        pbkdf2.deriveKeySync(passforge.apply_key_policy);
-        return true;
+        // derive key with PBKDF2
+        var derivedKey = sjcl.misc.pbkdf2(master, salt, passforge.iterations,
+                                   bytes * 8, sjcl.misc.hmac_sha1);
+
+        var elapsed = (new Date() - start) / 1000;
+
+        derivedKey = passforge.apply_key_policy(derivedKey);
+        result_callback && result_callback(derivedKey, elapsed);
+
+        return [passforge.apply_key_policy(derivedKey), elapsed];
     }
 };

@@ -25,8 +25,14 @@
 			width: 5.5em;
 		}
 	</style>
-	<script type="text/javascript" src="./sha1.js"></script>
-	<script type="text/javascript" src="./pbkdf2.js"></script>
+	<script type="text/javascript" src="./sjcl/core/sjcl.js"></script>
+	<script type="text/javascript" src="./sjcl/core/sha1.js"></script>
+	<script type="text/javascript" src="./sjcl/core/codecString.js"></script>
+	<script type="text/javascript" src="./sjcl/core/codecBase64.js"></script>
+	<script type="text/javascript" src="./sjcl/core/hmac.js"></script>
+	<script type="text/javascript" src="./sjcl/core/pbkdf2.js"></script>
+	<script type="text/javascript" src="./sjcl/core/pbkdf2async.js"></script>
+	<script type="text/javascript" src="./sjcl/core/bitArray.js"></script>
 	<script type="text/javascript" src="./passforge.js"></script>
 	<script>
 		function toggle_progress(elem) {
@@ -57,9 +63,8 @@
 			}
 		}
 
-
-		var status_callback = function(percent_done) {
-			set_progress(percent_done);
+		var status_callback = function(fraction_done) {
+			set_progress(fraction_done * 100);
 		};
 
 		var result_callback = function(key, elapsed) {
@@ -78,15 +83,12 @@
 		function run() {
 			var form = document.getElementById('form');
 			form.submit.disabled = true;
+			passforge.config(form.length.value, form.iterations.value,
+							status_callback, result_callback);
 
-			passforge.length = form.length.value;
-			passforge.iterations = form.iterations.value;
-			passforge.status_callback = status_callback;
-			passforge.return_callback = result_callback;
-
-			passforge.pwgen(form.nickname.value,
-			                form.password.value,
-					        form.salt.value,
+			passforge.pwgen(form.password.value,
+							form.nickname.value,
+							form.salt.value,
 							form.progress.checked);
 		}
 
@@ -121,7 +123,7 @@
 			</tr>
 			<tr>
 				<td>length</td>
-				<td><input type="text" name="length" value="10" /></td>
+				<td><input type="text" name="length" value="12" /></td>
 			</tr>
 		</table>
 		<label><input type="checkbox" name="progress" checked=1 onclick="toggle_progress(this)" />show progress</label>
