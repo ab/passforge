@@ -24,13 +24,16 @@ def str_to_hex(string):
     return ''.join(hex(ord(c))[2:] for c in string)
 
 def generate(password, salt, iterations, length=16):
-    cmd = os.path.join(os.path.dirname(sys.argv[0]), 'pbkdf2')
+    path = os.path.abspath(os.path.dirname(sys.argv[0]))
+    cmd = os.path.join(path, 'pbkdf2')
+    if not os.path.exists(cmd):
+        print 'command does not exist:', cmd
     p = Popen([cmd, str_to_hex(salt), iterations], stdin=PIPE, stdout=PIPE)
     out, err = p.communicate(password)
 
     key = hex_to_b64(out.strip())
 
-    return key
+    return key[:length]
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
@@ -39,4 +42,9 @@ if __name__ == '__main__':
 
     assert(int(sys.argv[3]))
 
-    print generate(sys.argv[1], sys.argv[2], sys.argv[3])
+    try:
+        length = int(sys.argv[4])
+    except IndexError:
+        length = 12
+
+    print generate(sys.argv[1], sys.argv[2], sys.argv[3], length)
