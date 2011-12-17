@@ -1,12 +1,8 @@
 #!/usr/bin/env python
-import base64
 import os.path
 import sys
+from base64 import b64encode
 from subprocess import Popen, PIPE
-
-def b64encode(text):
-    """Base64 encoding with -_ instead of +/"""
-    return base64.b64encode(text, '-_')
 
 def hex_to_b64(hexdata):
     # pad input

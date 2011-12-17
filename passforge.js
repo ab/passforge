@@ -19,9 +19,6 @@ passforge.apply_key_policy = function(key) {
     // truncate to desired length
     b64key = b64key.substring(0, passforge.length);
 
-    // use a url-safe variant of base64
-    b64key = b64key.replace(/\+/g, '-').replace(/\//g, '_');
-
     if (passforge.require_digits) {
         console.log('require_digits not yet implemented');
         // TODO
