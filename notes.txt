@@ -1,0 +1,58 @@
+libraries used:
+    JS:
+        SJCL
+        http://bitwiseshiftleft.github.com/sjcl/demo/
+    Python:
+        PBKDF2 library
+        https://www.dlitz.net/software/python-pbkdf2/
+        pip install pbkdf2
+    C:
+        OpenSSL
+    Android/Java:
+        PBKDF2 implementation
+
+    not used, but could be added without much work
+        https://github.com/emerose/pbkdf2-ruby
+            (some good discussion of PBKDF2)
+
+PBKDF2 nitty gritty
+    how many iterations to use?
+        as many as you can stand
+        - 4096: used by WPA
+        - 100,000: used by lastpass
+        rule of thumb: whatever will take a couple seconds to compute
+    sha256?
+        I used HMAC-SHA1 for widest compatibility. At some point it will
+        make sense to switch to HMAC-SHA256, which is supported by most
+        of the libraries used by passforge.
+
+other solutions:
+    lastpass
+        a great online password storage tool
+        what if they're down?
+        what if they go out of business or get bought?
+        what if they're compromised?
+            if the breach goes undetected and you log in, attacker gets all your data
+        already use PBKDF2 for your master password
+    GnuPG / keepass / other offline tool
+        great offline password storage tools
+        synchronization is up to you
+    browser storage
+        have to trust the browser with all your passwords
+        what about non-browser tools?
+        what about synchronization?
+            work computer?
+            phone browser?
+
+other no-storage solutions:
+    oplop
+        https://oplop.appspot.com/
+        uses just one round of MD5
+        "a mobile phone cannot run MD5 thousands of times very quickly"
+            no longer true of modern phones
+            my galaxy nexus can do 8,000 iterations of hmac-sha1 per second
+        https://code.google.com/p/oplop/wiki/ThreatModel
+    supergenpass
+        http://supergenpass.com/faq/
+        uses ~10 rounds of MD5
+        slow because it's in javascript
