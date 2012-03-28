@@ -1,6 +1,6 @@
 <html>
 <head>
-	<title>PassForge password generator</title>
+	<title>PassForge: zero-storage password management</title>
 	<meta name="viewport" content="width=device-width" />
 	<style type="text/css">
 		#progress {
@@ -88,7 +88,6 @@
 
 			passforge.pwgen(form.password.value,
 							form.nickname.value,
-							form.salt.value,
 							form.progress.checked);
 		}
 
@@ -104,10 +103,6 @@
 			<tr>
 				<td>nickname</td>
 				<td><input type="text" name="nickname" value="AMZN" /></td>
-			</tr>
-			<tr>
-				<td>salt</td>
-				<td><input type="text" name="salt" value="saltines" /></td>
 			</tr>
 			<tr>
 				<td>strengthening factor</td>

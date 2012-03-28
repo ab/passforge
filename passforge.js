@@ -26,18 +26,12 @@ passforge.apply_key_policy = function(key) {
     return b64key;
 }
 
-passforge.pwgen = function(master, nickname, salt, asynchronous) {
+passforge.pwgen = function(master, nickname, asynchronous) {
     // round up bytes required
     var bytes = Math.ceil(passforge.length * 3 / 4);
 
     master = sjcl.codec.utf8String.toBits(master);
-    nickname = sjcl.codec.utf8String.toBits(nickname);
-    salt = sjcl.codec.utf8String.toBits(salt);
-
-    // salt = nickname XOR salt
-    for (var i = 0; i < nickname.length; i++) {
-        salt[i] ^= nickname[i];
-    }
+    salt = sjcl.codec.utf8String.toBits(nickname);
 
     var start = new Date();
 
