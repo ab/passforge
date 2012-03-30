@@ -1,0 +1,136 @@
+<html>
+<head>
+	<title>PassForge: zero-storage password management</title>
+	<meta name="viewport" content="width=device-width" />
+	<style type="text/css">
+		#progress {
+			width: 0px;
+			height: 100%;
+			background-color: #729fcf;
+		}
+		#progressContainer {
+			width: 200px;
+			height: 8px;
+			border: 1px solid black;
+			margin-bottom: 0.5em;
+		}
+		#key {
+			width: 200px;
+		}
+		#time {
+			margin-left: 1em;
+			color: #666;
+		}
+		#iterations {
+			width: 5.5em;
+		}
+	</style>
+	<script type="text/javascript" src="./sjcl/core/sjcl.js"></script>
+	<script type="text/javascript" src="./sjcl/core/sha1.js"></script>
+	<script type="text/javascript" src="./sjcl/core/codecString.js"></script>
+	<script type="text/javascript" src="./sjcl/core/codecBase64.js"></script>
+	<script type="text/javascript" src="./sjcl/core/hmac.js"></script>
+	<script type="text/javascript" src="./sjcl/core/pbkdf2.js"></script>
+	<script type="text/javascript" src="./sjcl/core/pbkdf2async.js"></script>
+	<script type="text/javascript" src="./sjcl/core/bitArray.js"></script>
+	<script type="text/javascript" src="./passforge.js"></script>
+	<script>
+		function toggle_progress(elem) {
+			var progress = document.getElementById('progressContainer');
+			if (elem.checked) {
+				//progress.style.visibility = "visible";
+				progress.style.display = "block";
+			} else {
+				//progress.style.visibility = "hidden";
+				progress.style.display = "none";
+			}
+		}
+
+		function set_progress(out_of_100) {
+			var progress = document.getElementById('progress');
+			progress.style.width = out_of_100 + "%";
+		}
+
+		function set_iters(elem) {
+			var iters = document.getElementById('iterations')
+			if (elem.value == 'custom') {
+				iters.disabled = false;
+				iters.focus();
+				iters.select();
+			} else {
+				iters.disabled = true;
+				iters.value = elem.value;
+			}
+		}
+
+		var status_callback = function(fraction_done) {
+			set_progress(fraction_done * 100);
+		};
+
+		var result_callback = function(key, elapsed) {
+			set_progress(100);
+			var text = "created in " + elapsed + "s";
+			document.getElementById("time").innerHTML = text;
+
+			var keyInput = document.getElementById('key');
+			keyInput.value = key;
+			keyInput.focus();
+			keyInput.select();
+
+			document.getElementById('form').submit.disabled = false;
+		};
+
+		function run() {
+			var form = document.getElementById('form');
+			form.submit.disabled = true;
+			passforge.config(form.length.value, form.iterations.value,
+							status_callback, result_callback);
+
+			passforge.pwgen(form.password.value,
+							form.nickname.value,
+							form.progress.checked);
+		}
+
+	</script>
+</head>
+<body>
+	<form id="form">
+		<table>
+			<tr>
+				<td>password</td>
+				<td><input type="password" name="password" value="mypassword" /></td>
+			</tr>
+			<tr>
+				<td>nickname</td>
+				<td><input type="text" name="nickname" value="AMZN" /></td>
+			</tr>
+			<tr>
+				<td>strengthening factor</td>
+				<td>
+					<select name="strengthening" onchange="set_iters(this)">
+						<option value="4097">low</option>
+						<option value="10000" selected=1>medium</option>
+						<option value="25000">high</option>
+						<option value="100000">very high</option>
+						<option value="custom">custom</option>
+					</select>
+					<input type="text" id="iterations" name="iterations" value="10000" disabled=1 />
+				</td>
+			</tr>
+			<tr>
+				<td>length</td>
+				<td><input type="text" name="length" value="12" /></td>
+			</tr>
+		</table>
+		<label><input type="checkbox" name="progress" checked=1 onclick="toggle_progress(this)" />show progress</label>
+
+		<br />
+		<input type="submit" name="submit" value="Create" onclick="run(); return false" />
+		<br /><br />
+		<div id="progressContainer"><div id="progress">&nbsp;</div></div>
+		<div id="status"></div>
+		<input type="text" id="key" />
+		<div id="time"></div>
+	</form>
+</body>
+</html>
