@@ -25,10 +25,18 @@ PBKDF2 nitty gritty
         I used HMAC-SHA1 for widest compatibility. At some point it will
         make sense to switch to HMAC-SHA256, which is supported by most
         of the libraries used by passforge.
+        The attacks on SHA-1 published so far concern its resistance to
+        collisions. This is not an important property from the standpoint of
+        PBKDF2 or key generation, so it is not a cause for concern.
     vulnerable to rainbow tables
         higher iterations help somewhat
         ultimately, there is no protection for a weak master password
         passforge uses 4097 as "low" to thwart datasets precomputed for WPA
+
+performance:
+    really good in C
+    decent in chrome / opera
+        not as good in FF
 
 other solutions:
     lastpass
