@@ -83,7 +83,7 @@
       document.getElementById('form').submit.disabled = false;
     };
 
-    function run() {
+    function generate() {
       var form = document.getElementById('form');
       form.submit.disabled = true;
       passforge.config(form.length.value, form.iterations.value,
@@ -128,7 +128,7 @@
     <label><input type="checkbox" name="progress" checked=1 onclick="toggle_progress(this)" />show progress</label>
 
     <br />
-    <input type="submit" name="submit" value="Create" onclick="run(); return false" />
+    <input type="submit" name="submit" value="Create" onclick="generate(); return false" />
     <br /><br />
     <div id="progressContainer"><div id="progress">&nbsp;</div></div>
     <div id="status"></div>

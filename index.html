@@ -16,6 +16,7 @@
       }
     </style>
     <link href="./css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="./css/main.css" rel="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -64,24 +65,24 @@
           are no servers that can be offline or hacked, and there are no files to
           synchronize.
         </p>
-        <p><a class="btn btn-primary btn-large" href="./js.html">Try it out &raquo;</a></p>
+        <!-- <p><a class="btn btn-primary btn-large" href="./js.html">Try it out &raquo;</a></p> -->
       </div>
 
       <!-- Example row of columns -->
       <div class="row">
-        <div class="span4">
-          <h2>Simple</h2>
-          <p>
-            You choose and memorize a single master password. PassForge
-            combines this with a unique nickname (such as the name of a
-            website) to generate a strong password. It uses a particular
-            algorithm to do this so that it will generate the same unique
-            password every time. Because the passwords aren't stored anywhere,
-            there is nothing to back up or synchronize, and there are no
-            servers that can break or be hacked.
-          </p>
-          <!-- <p><a class="btn" href="./js.html">Try it out &raquo;</a></p> -->
-        </div>
+        <!-- <div class="span4"> -->
+        <!--   <h2>Simple</h2> -->
+        <!--   <p> -->
+        <!--     You choose and memorize a single master password. PassForge -->
+        <!--     combines this with a unique nickname (such as the name of a -->
+        <!--     website) to generate a strong password. It uses a particular -->
+        <!--     algorithm to do this so that it will generate the same unique -->
+        <!--     password every time. Because the passwords aren't stored anywhere, -->
+        <!--     there is nothing to back up or synchronize, and there are no -->
+        <!--     servers that can break or be hacked. -->
+        <!--   </p> -->
+        <!--   <p><a class="btn" href="./js.html">Try it out &raquo;</a></p> -->
+        <!-- </div> -->
         <div class="span4">
           <h2>Secure</h2>
           <p>
@@ -98,7 +99,28 @@
             source, and the code is simple enough to verify yourself.
           </p>
           <p><a class="btn" href="./security.html">Learn more &raquo;</a></p>
-       </div>
+        </div>
+        <div class="span4">
+          <h2>Try it out</h2>
+          <p>
+            <!-- TODO: placeholder attributes? -->
+            password:<br />
+            <input type="password" name="password" class="default" /><br />
+            nickname:<br />
+            <input type="text" name="nickname" class="default" /><br />
+            strengthening factor:<br />
+            <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)" style="width: 103px">
+              <option value="4097">low</option>
+              <option value="10000" selected=1>medium</option>
+              <option value="25000">high</option>
+              <option value="100000">very high</option>
+              <option value="custom">custom</option>
+            </select>
+            <input type="text" id="iterations" name="iterations" value="10000" disabled=1 style="width: 103px" />
+            <br />
+            <input type="text">
+          <p><a class="btn btn-primary" onclick="run(); return false">Create</a></p>
+        </div>
         <div class="span4">
           <h2>Portable</h2>
           <p>
