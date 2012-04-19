@@ -1,3 +1,7 @@
+/*
+ * Javascript to power the HTML PassForge interface.
+ */
+
 function toggle_progress(elem) {
   var progress = document.getElementById('progressContainer');
   if (elem.checked) {
@@ -47,6 +51,13 @@ var result_callback = function(key, elapsed) {
   set_progress(0);
 };
 
+function clear_validation_errors() {
+  var form = document.getElementById('demoForm');
+
+  form.password.parentNode.classList.remove('error');
+  form.nickname.parentNode.classList.remove('error');
+}
+
 function generate() {
   var button = document.getElementById('startButton');
   var form = document.getElementById('demoForm');
@@ -56,9 +67,20 @@ function generate() {
     return false;
   }
 
-  // do nothing if password or nickname is blank
-  if (!form.password.value || !form.nickname.value) {
-      return false;
+  clear_validation_errors();
+
+  var validation_errors = false;
+  // validation error if password or nickname is blank
+  if (!form.password.value) {
+    form.password.parentNode.classList.add('error');
+    validation_errors = true;
+  }
+  if (!form.nickname.value) {
+    form.nickname.parentNode.classList.add('error');
+    validation_errors = true;
+  }
+  if (validation_errors) {
+    return true;
   }
 
   button.classList.add('disabled');
@@ -82,3 +104,5 @@ function generate() {
 
   passforge.pwgen(form.password.value, form.nickname.value, async);
 }
+
+/* vim: set ts=2 sw=2 : */

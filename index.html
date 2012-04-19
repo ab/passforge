@@ -113,10 +113,14 @@
           <form id="demoForm">
             <p>
               <!-- TODO: placeholder attributes instead of labels? -->
-              password:<br />
-              <input type="password" name="password" class="default" placeholder="your master password" /><br />
-              nickname:<br />
-              <input type="text" name="nickname" class="default" placeholder="example.com" /><br />
+              <div class="control-group">
+                password:<br />
+                <input type="password" name="password" class="default" placeholder="your master password" onchange="clear_validation_errors()" /><br />
+              </div>
+              <div class="control-group">
+                nickname:<br />
+                <input type="text" name="nickname" class="default" placeholder="example.com" onchange="clear_validation_errors()" /><br />
+              </div>
               strengthening factor:<br />
               <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)" style="width: 103px">
                 <option value="4097">low</option>
@@ -161,3 +165,4 @@
     </div> <!-- /container -->
   </body>
 </html>
+<!-- vim: set sw=2 ts=2 : -->
