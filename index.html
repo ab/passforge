@@ -70,7 +70,7 @@
         <p>
           PassForge uses cryptography to derive strong passwords for all your
           accounts. You only have to remember a single master password. There
-          are no servers that can be offline or hacked, and there are no files to
+          are no servers that can be down or hacked, and there are no files to
           synchronize.
         </p>
         <!-- <p><a class="btn btn-primary btn-large" href="./js.html">Try it out &raquo;</a></p> -->
@@ -110,24 +110,31 @@
         </div>
         <div class="span4">
           <h2>Try it out</h2>
-          <p>
-            <!-- TODO: placeholder attributes instead of labels? -->
-            password:<br />
-            <input type="password" name="password" class="default" /><br />
-            nickname:<br />
-            <input type="text" name="nickname" class="default" /><br />
-            strengthening factor:<br />
-            <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)" style="width: 103px">
-              <option value="4097">low</option>
-              <option value="10000" selected=1>medium</option>
-              <option value="25000">high</option>
-              <option value="100000">very high</option>
-              <option value="custom">custom</option>
-            </select>
-            <input type="text" id="iterations" name="iterations" value="10000" disabled=1 style="width: 103px" />
-            <br />
-            <input type="text">
-          <p><a class="btn btn-primary" onclick="run(); return false">Create</a></p>
+          <form id="demoForm">
+            <p>
+              <!-- TODO: placeholder attributes instead of labels? -->
+              password:<br />
+              <input type="password" name="password" class="default" /><br />
+              nickname:<br />
+              <input type="text" name="nickname" class="default" /><br />
+              strengthening factor:<br />
+              <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)" style="width: 103px">
+                <option value="4097">low</option>
+                <option value="10000" selected=1>medium</option>
+                <option value="25000">high</option>
+                <option value="100000">very high</option>
+                <option value="custom">custom</option>
+              </select>
+              <input type="text" id="iterations" name="iterations" value="10000" disabled=1 style="width: 103px" />
+              <br />
+            <p><a id="startButton" class="btn btn-primary" onclick="generate(); return false">Create</a></p>
+            <p>
+              <div id="progressContainer"><div id="progress">&nbsp;</div></div>
+              <input style="display: none" type="text" id="key">
+              </input>
+
+            </p>
+          </form>
         </div>
         <div class="span4">
           <h2>Portable</h2>

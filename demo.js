@@ -43,20 +43,30 @@ var result_callback = function(key, elapsed) {
   keyInput.focus();
   keyInput.select();
 
-  document.getElementById('form').submit.disabled = false;
+  document.getElementById('startButton').classList.remove('disabled');
 };
 
 function generate() {
-  var form = document.getElementById('form');
-  form.submit.disabled = true;
+  var button = document.getElementById('startButton');
+  var form = document.getElementById('demoForm');
+
+  if (button.classList.contains('disabled')) {
+    return false;
+  }
+
+  button.classList.add('disabled');
+
   try {
     passforge.config(form.length.value, form.iterations.value,
                      status_callback, result_callback);
   } catch(e) {
-    form.submit.disabled = false;
+    button.classList.remove('disabled');
     alert('ERROR: ' + e.message);
     return;
   }
+
+  // show result input
+  document.getElementById('key').style.display = '';
 
   passforge.pwgen(form.password.value,
           form.nickname.value,

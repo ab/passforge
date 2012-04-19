@@ -1,16 +1,17 @@
 #progress {
-  width: 0px;
-  height: 100%;
-  background-color: #729fcf;
+  position: relative;
+  height: 3px;
+  width: 0%;
+  background-color: rgba(82,168,236,0.8);
+  top: 0px;
+  left: 0px;
 }
 #progressContainer {
-  width: 200px;
-  height: 8px;
-  border: 1px solid black;
-  margin-bottom: 0.5em;
-}
-#key {
-  width: 200px;
+  position: relative;
+  top: 4px;
+  left: 2px;
+  width: 216px;
+  height: 3px;
 }
 #time {
   margin-left: 1em;
