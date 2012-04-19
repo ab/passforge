@@ -7,7 +7,7 @@
 var passforge = passforge || {};
 
 passforge.config = function(length, iterations, status_callback, result_callback) {
-    passforge.length = length || 8;
+    passforge.length = length || 12;
     passforge.iterations = iterations || 1000;
     passforge.require_digits = false; // TODO (notimplemented)
     passforge.status_callback = status_callback;
