@@ -44,14 +44,21 @@ var result_callback = function(key, elapsed) {
   keyInput.select();
 
   document.getElementById('startButton').classList.remove('disabled');
+  set_progress(0);
 };
 
 function generate() {
   var button = document.getElementById('startButton');
   var form = document.getElementById('demoForm');
 
+  // do nothing if generation is already running
   if (button.classList.contains('disabled')) {
     return false;
+  }
+
+  // do nothing if password or nickname is blank
+  if (!form.password.value || !form.nickname.value) {
+      return false;
   }
 
   button.classList.add('disabled');
@@ -68,7 +75,10 @@ function generate() {
   // show result input
   document.getElementById('key').style.display = '';
 
-  passforge.pwgen(form.password.value,
-          form.nickname.value,
-          form.progress.checked);
+  var async = true;
+  if (form.progress) {
+      async = form.progress.checked;
+  }
+
+  passforge.pwgen(form.password.value, form.nickname.value, async);
 }

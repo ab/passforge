@@ -114,9 +114,9 @@
             <p>
               <!-- TODO: placeholder attributes instead of labels? -->
               password:<br />
-              <input type="password" name="password" class="default" /><br />
+              <input type="password" name="password" class="default" placeholder="your master password" /><br />
               nickname:<br />
-              <input type="text" name="nickname" class="default" /><br />
+              <input type="text" name="nickname" class="default" placeholder="example.com" /><br />
               strengthening factor:<br />
               <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)" style="width: 103px">
                 <option value="4097">low</option>
@@ -127,10 +127,11 @@
               </select>
               <input type="text" id="iterations" name="iterations" value="10000" disabled=1 style="width: 103px" />
               <br />
-            <p><a id="startButton" class="btn btn-primary" onclick="generate(); return false">Create</a></p>
+            <p><button id="startButton" type="submit" class="btn btn-primary" onclick="generate(); return false">Create</button></p>
             <p>
               <div id="progressContainer"><div id="progress">&nbsp;</div></div>
               <input style="display: none" type="text" id="key">
+              <div id="time"></div>
               </input>
 
             </p>
