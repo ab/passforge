@@ -20,7 +20,7 @@ passforge.config = function(length, iterations, status_callback, result_callback
 
 /* A wrapper function to truncate the derived key to the correct length. */
 passforge.apply_key_policy = function(key) {
-    var b64key = sjcl.codec.base64url.fromBits(key);
+    var b64key = sjcl.codec.base64.fromBits(key);
 
     // truncate to desired length
     b64key = b64key.substring(0, passforge.length);
