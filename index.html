@@ -94,17 +94,17 @@
         <div class="span4">
           <h2>Secure</h2>
           <p>
-            PassForge uses
+            You choose and memorize a single master password. PassForge
+            combines this with a unique nickname, such as the name of a
+            website, to generate a strong password. It uses
             <a href="http://en.wikipedia.org/wiki/Pbkdf2">PBKDF2</a>,
-            a key derivation function that is widely used for encryption. It
-            works by computing a one-way hash function from your master
-            password plus the nickname and repeating the process thousands of
-            times. This makes it resilient even against brute-force attacks
-            where one of your account passwords has been leaked.
+            a key derivation function widely used in encryption.
           </p>
           <p>
-            You can run PassForge on your own computer or phone. It's open
-            source, and the code is simple enough to verify yourself.
+            PassForge computes a one-way hash function from your master
+            password and nickname, repeating thousands of times.
+            This makes it resilient against brute-force attacks even if one
+            of your generated passwords has been leaked.
           </p>
           <p><a class="btn" href="./security.html">Learn more &raquo;</a></p>
         </div>
@@ -131,26 +131,31 @@
               </select>
               <input type="text" id="iterations" name="iterations" value="10000" disabled=1 style="width: 103px" />
               <br />
-            <p><button id="startButton" type="submit" class="btn btn-primary" onclick="generate(); return false">Create</button></p>
+            </p>
             <p>
-              <div id="progressContainer"><div id="progress">&nbsp;</div></div>
-              <input style="display: none" type="text" id="key">
-              <div id="time"></div>
-              </input>
-
+              <button id="startButton" type="submit" class="btn btn-large btn-primary" onclick="generate(); return false">Create</button>
             </p>
           </form>
+          <p>
+            <div id="progressContainer"><div id="progress">&nbsp;</div></div>
+            <input style="display: none" type="text" id="key">
+            <div id="time"></div>
+          </p>
         </div>
         <div class="span4">
           <h2>Portable</h2>
           <p>
+            You can run PassForge on your own computer or phone. It's open
+            source, and the code is simple enough to verify yourself.
+          </p>
+          <p>
             Because PassForge uses a
             <a href="https://tools.ietf.org/html/rfc2898">standardized</a>
-            and widely used algorithm, it is available for most platforms.
+            and widely deployed algorithm, it is available for most platforms.
             Implementations are provided for Linux and OS X (in C), for Windows
             (in Python), for Android (in Java), and for any modern web browser
             (in Javascript). The C version can run anywhere OpenSSL is
-            available.
+            available. You'll never need to depend on servers again.
           </p>
           <p><a class="btn" href="./libraries.html">Download &raquo;</a></p>
         </div>
