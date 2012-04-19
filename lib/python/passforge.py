@@ -3,6 +3,7 @@ import math
 import optparse
 import sys
 from base64 import b64encode
+from datetime import datetime
 from getpass import getpass
 from pbkdf2 import PBKDF2
 
@@ -77,7 +78,14 @@ class PassForge(object):
             sys.stderr.write(message + '\n')
 
     def pwgen(self, nickname):
-        return generate(self.password, nickname, self.iterations, self.length)
+        start = datetime.now()
+
+        key = generate(self.password, nickname, self.iterations, self.length)
+
+        elapsed = datetime.now() - start
+        secs = elapsed.seconds + elapsed.microseconds / 1000000.
+        self.vprint('generated in %.2f seconds' % secs)
+        return key
 
     def run_interactive(self):
         if self.nickname:
@@ -111,12 +119,12 @@ if __name__ == '__main__':
     p.add_option('-n', '--nickname', dest='nickname', metavar='TEXT',
                  help='per-site nickname used to determine unique password')
     p.add_option('-i', '--iterations', dest='iterations', metavar='NUM',
-                 help='number of PBKDF2 iterations')
+                 type='int', help='number of PBKDF2 iterations')
     p.add_option('-s', '--strengthening', dest='strengthening',
                  metavar='LEVEL', help='number of iterations by description',
                  choices=list(LEVEL_MAP.keys()))
     p.add_option('-l', '--length', dest='length', metavar='LENGTH',
-                 default=14, help='length of generated password')
+                 type='int', help='length of generated password')
     p.add_option('-b', '--batch', dest='batch', action='store_true',
                  help="non-interactive mode")
 
@@ -129,15 +137,10 @@ if __name__ == '__main__':
 
     try:
         pf = PassForge(opts, interactive)
+        pf.run()
     except PassForgeError, e:
         sys.stderr.write('ERROR: ' + e.args[0] + '\n')
         sys.exit(3)
-    except EOFError:
-        print ''
-        sys.exit(2)
-
-    try:
-        pf.run()
     except (KeyboardInterrupt, EOFError):
         print ''
 
