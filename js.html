@@ -2,29 +2,9 @@
 <head>
   <title>PassForge: zero-storage password management</title>
   <meta name="viewport" content="width=device-width" />
-  <style type="text/css">
-    #progress {
-      width: 0px;
-      height: 100%;
-      background-color: #729fcf;
-    }
-    #progressContainer {
-      width: 200px;
-      height: 8px;
-      border: 1px solid black;
-      margin-bottom: 0.5em;
-    }
-    #key {
-      width: 200px;
-    }
-    #time {
-      margin-left: 1em;
-      color: #666;
-    }
-    #iterations {
-      width: 5.5em;
-    }
-  </style>
+
+  <link href="./css/main.css" rel="stylesheet">
+
   <script type="text/javascript" src="./sjcl/core/sjcl.js"></script>
   <script type="text/javascript" src="./sjcl/core/sha1.js"></script>
   <script type="text/javascript" src="./sjcl/core/codecString.js"></script>
@@ -33,68 +13,9 @@
   <script type="text/javascript" src="./sjcl/core/pbkdf2.js"></script>
   <script type="text/javascript" src="./sjcl/core/pbkdf2async.js"></script>
   <script type="text/javascript" src="./sjcl/core/bitArray.js"></script>
+
   <script type="text/javascript" src="./passforge.js"></script>
-  <script>
-    function toggle_progress(elem) {
-      var progress = document.getElementById('progressContainer');
-      if (elem.checked) {
-        //progress.style.visibility = "visible";
-        progress.style.display = "block";
-      } else {
-        //progress.style.visibility = "hidden";
-        progress.style.display = "none";
-      }
-    }
-
-    function set_progress(out_of_100) {
-      var progress = document.getElementById('progress');
-      progress.style.width = out_of_100 + "%";
-    }
-
-    function set_iters(elem) {
-      var iters = document.getElementById('iterations')
-      if (elem.value == 'custom') {
-        if (!iters.disabled) {
-          return;
-        }
-        iters.disabled = false;
-        iters.focus();
-        iters.select();
-      } else {
-        iters.disabled = true;
-        iters.value = elem.value;
-      }
-    }
-
-    var status_callback = function(fraction_done) {
-      set_progress(fraction_done * 100);
-    };
-
-    var result_callback = function(key, elapsed) {
-      set_progress(100);
-      var text = "created in " + elapsed + "s";
-      document.getElementById("time").innerHTML = text;
-
-      var keyInput = document.getElementById('key');
-      keyInput.value = key;
-      keyInput.focus();
-      keyInput.select();
-
-      document.getElementById('form').submit.disabled = false;
-    };
-
-    function generate() {
-      var form = document.getElementById('form');
-      form.submit.disabled = true;
-      passforge.config(form.length.value, form.iterations.value,
-              status_callback, result_callback);
-
-      passforge.pwgen(form.password.value,
-              form.nickname.value,
-              form.progress.checked);
-    }
-
-  </script>
+  <script type="text/javascript" src="./demo.js"></script>
 </head>
 <body>
   <form id="form">
@@ -137,3 +58,4 @@
   </form>
 </body>
 </html>
+<!-- vim: set ts=2 sw=2: -->

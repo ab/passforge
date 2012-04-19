@@ -1,0 +1,26 @@
+#progress {
+  width: 0px;
+  height: 100%;
+  background-color: #729fcf;
+}
+#progressContainer {
+  width: 200px;
+  height: 8px;
+  border: 1px solid black;
+  margin-bottom: 0.5em;
+}
+#key {
+  width: 200px;
+}
+#time {
+  margin-left: 1em;
+  color: #666;
+}
+#iterations {
+  width: 5.5em;
+}
+
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}

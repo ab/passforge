@@ -1,5 +1,7 @@
 /*
  * passforge.js
+ *
+ * Javascript implementation of PassForge
  */
 
 var passforge = passforge || {};
@@ -10,6 +12,10 @@ passforge.config = function(length, iterations, status_callback, result_callback
     passforge.require_digits = false; // TODO (notimplemented)
     passforge.status_callback = status_callback;
     passforge.result_callback = result_callback;
+
+    if (typeof(sjcl) == 'undefined') {
+        throw ReferenceError('Failed to load SJCL library.');
+    }
 }
 
 /* A wrapper function to truncate the derived key to the correct length. */
