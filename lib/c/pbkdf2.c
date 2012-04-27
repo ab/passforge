@@ -42,6 +42,7 @@
 **
 */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <openssl/x509.h>
@@ -51,28 +52,23 @@
 void print_hex(unsigned char *buf, int len)
 {
   int i;
-  int n;
 
-  for(i=0,n=0;i<len;i++){
-    //if(n > 7){
-    //  printf("\n");
-    //  n = 0;
-    //}
-    printf("%02x",buf[i]);
-    //n++;
+  for (i=0; i<len; i++) {
+    printf("%02x",(unsigned int) buf[i]);
   }
   printf("\n");
 }
 
-void hex_to_binary(unsigned char *buf, unsigned char *hex)
+void hex_to_binary(unsigned char *buf, char *hex)
 {
+  // TODO: rewrite
   for( ; sscanf( hex, "%2x", buf++ ) == 1 ; hex+=2 );
   *buf = 0;  // null terminate -- precaution
 }
 
 int main(int argc, char **argv)
 {
-  unsigned char pass[1024];      // passphrase read from stdin
+  char pass[1024];      // passphrase read from stdin
   unsigned char salt[1024];      // salt (binary)
   int salt_len;                  // salt length in bytes
   int ic;                        // iterative count
