@@ -1,4 +1,4 @@
-LIBS= -lcrypto
+LIBS= -lcrypto -lm
 
 CC?= gcc
 

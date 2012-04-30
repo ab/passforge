@@ -9,6 +9,7 @@
 #define _XOPEN_SOURCE 500
 
 #include <err.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +18,9 @@
 #include <openssl/opensslv.h>
 #include <openssl/evp.h>
 #include <openssl/bio.h>
+#include <openssl/buffer.h>
+
+#define DEBUG 0
 
 void print_hex(unsigned char *buf, int len) {
     for (int i=0; i<len; i++) {
@@ -25,8 +29,35 @@ void print_hex(unsigned char *buf, int len) {
     printf("\n");
 }
 
+/* use OpenSSL routines to encode in base64 */
+char *base64_encode(unsigned char *bytes, int length) {
+    BIO *bmem, *b64;
+    BUF_MEM *bptr;
+
+    b64 = BIO_new(BIO_f_base64());
+    bmem = BIO_new(BIO_s_mem());
+    b64 = BIO_push(b64, bmem);
+    BIO_write(b64, bytes, length);
+    (void)BIO_flush(b64); // cast to suppress compiler warning
+    BIO_get_mem_ptr(b64, &bptr);
+
+    char *buf = malloc(bptr->length);
+    if (!buf) {
+        return NULL;
+    }
+
+    memcpy(buf, bptr->data, bptr->length - 1);
+    buf[bptr->length - 1] = 0;
+
+    BIO_free_all(b64);
+
+    return buf;
+}
+
+/* Password-Based Key Derivation Function, version 2 */
 int pbkdf2(char *pass, size_t pass_len, unsigned char *salt, size_t salt_len,
-           int iterations, const EVP_MD *digest, int bytes, unsigned char *result) {
+           int iterations, const EVP_MD *digest, int bytes,
+           unsigned char *result) {
     if (!pass) {
         fprintf(stderr, "no passphrase given\n");
         return 2;
@@ -48,7 +79,8 @@ int pbkdf2(char *pass, size_t pass_len, unsigned char *salt, size_t salt_len,
         return 6;
     }
 
-    if (PKCS5_PBKDF2_HMAC(pass, pass_len, salt, salt_len, iterations, digest, bytes, result)) {
+    if (PKCS5_PBKDF2_HMAC(pass, pass_len, salt, salt_len, iterations, digest,
+                          bytes, result)) {
         /* success */
         return 0;
     } else {
@@ -56,18 +88,22 @@ int pbkdf2(char *pass, size_t pass_len, unsigned char *salt, size_t salt_len,
     }
 }
 
-int pbkdf2_sha1(char *pass, size_t pass_len, unsigned char *salt, size_t salt_len,
-                int iterations, int bytes, unsigned char *result) {
+int pbkdf2_sha1(char *pass, size_t pass_len, unsigned char *salt,
+                size_t salt_len, int iterations, int bytes,
+                unsigned char *result) {
     OpenSSL_add_all_algorithms();
     const EVP_MD *md = EVP_sha1();
-    return pbkdf2(pass, pass_len, salt, salt_len, iterations, md, bytes, result);
+    return pbkdf2(pass, pass_len, salt, salt_len, iterations, md, bytes,
+                  result);
 }
 
-int pbkdf2_sha256(char *pass, size_t pass_len, unsigned char *salt, size_t salt_len,
-                  int iterations, int bytes, unsigned char *result) {
+int pbkdf2_sha256(char *pass, size_t pass_len, unsigned char *salt,
+                  size_t salt_len, int iterations, int bytes,
+                  unsigned char *result) {
     OpenSSL_add_all_algorithms();
     const EVP_MD *md = EVP_sha256();
-    return pbkdf2(pass, pass_len, salt, salt_len, iterations, md, bytes, result);
+    return pbkdf2(pass, pass_len, salt, salt_len, iterations, md, bytes,
+                  result);
 }
 
 int main(int argc, char **argv) {
@@ -96,8 +132,14 @@ int main(int argc, char **argv) {
         }
     }
 
-    unsigned char *result = malloc(length);
-    if (!result) {
+    int bytes = (int) ceil((double)length * 3 / 4);
+    if (bytes <= 0) {
+        fprintf(stderr, "error: would have derived %d bytes\n", bytes);
+        exit(12);
+    }
+
+    unsigned char *dKey = malloc(bytes);
+    if (!dKey) {
         err(9, "failed to allocate memory for result");
     }
 
@@ -110,7 +152,8 @@ int main(int argc, char **argv) {
         err(11, "strdup");
     }
 
-    int res = pbkdf2_sha1(pass, strlen(pass), salt, salt_len, ic, length, result);
+    int passlen = strlen(pass);
+    int res = pbkdf2_sha1(pass, passlen, salt, salt_len, ic, bytes, dKey);
     if (res) {
         fprintf(stderr, "ERROR\n");
         return res;
@@ -118,16 +161,30 @@ int main(int argc, char **argv) {
 
     int as_hex = 0;
     if (as_hex) {
-        print_hex(result, length);
+        /* print as hex */
+        print_hex(dKey, bytes);
     } else {
-        BIO *bio, *b64;
-        b64 = BIO_new(BIO_f_base64());
-        bio = BIO_new_fp(stdout, BIO_NOCLOSE);
-        bio = BIO_push(b64, bio);
-        BIO_write(bio, result, length);
-        (void) BIO_flush(bio); // cast to avoid compiler warning
-        BIO_free_all(bio);
+#if DEBUG
+        print_hex(dKey, bytes);
+#endif
+        char *output = base64_encode(dKey, bytes);
+        if (!output) {
+            err(13, "failed to get output buffer");
+        }
+
+        /* truncate to length */
+        if (strlen(output) > length) {
+            output[length] = '\0';
+        }
+
+#if DEBUG
+        print_hex((unsigned char *)output, length);
+#endif
+
+        printf("%s\n", output);
     }
 
     return(0);
 }
+
+/* vim: set ts=4 sw=4 et tw=79 */

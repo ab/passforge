@@ -19,6 +19,7 @@ PBKDF2 nitty gritty
     how many iterations to use?
         as many as you can stand
         - 4096: used by WPA
+        - 10,000: used by iOS 4
         - 100,000: used by lastpass
         rule of thumb: whatever will take a couple seconds to compute
     sha256?
@@ -32,6 +33,29 @@ PBKDF2 nitty gritty
         higher iterations help somewhat
         ultimately, there is no protection for a weak master password
         passforge uses 4097 as "low" to thwart datasets precomputed for WPA
+    can I use passforge to generate keys for encryption?
+        It would make more sense to use PBKDF2 directly, but as long as you
+        pick a random salt and a good passphrase, you should be OK.
+    why not bcrypt or scrypt?
+        If one of your generated passwords is leaked, passforge provides some
+        protection against attempts to recover the master passphrase. It is
+        much safer than using a single iteration of any hash function, even if
+        you've used a weak master passphrase (not recommended). But attacks by
+        GPUs or CPU clusters present a significant risk, and Moore's law makes
+        this increase dramatically over time. The scrypt
+        <http://www.tarsnap.com/scrypt.html> algorithm is designed to be
+        expensive in memory as well as processing power, which makes it orders
+        of magnitude stronger against GPU brute force attempts.
+
+        However, I wanted a simple, widely tested, and very portable algorithm
+        for passforge. To my knowledge, there are no major implementations of
+        scrypt besides Colin Percival's original C. While bcrypt is implemented
+        in several languages, including a plausible looking javascript version,
+        the algorithm is complex enough that it is difficult to check over. I
+        wanted an algorithm that was simple enough for moderately saavy users
+        to verify or even reimplement.
+
+        Passforge may adopt one of these algorithms in a future version.
 
 performance:
     really good in C
