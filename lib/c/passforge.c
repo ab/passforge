@@ -10,6 +10,7 @@
 
 #include <err.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,7 +30,7 @@ void print_hex(unsigned char *buf, int len) {
     printf("\n");
 }
 
-/* use OpenSSL routines to encode in base64 */
+/* Use OpenSSL routines to encode in base64. */
 char *base64_encode(unsigned char *bytes, int length) {
     BIO *bmem, *b64;
     BUF_MEM *bptr;
@@ -104,6 +105,64 @@ int pbkdf2_sha256(char *pass, size_t pass_len, unsigned char *salt,
                   result);
 }
 
+char *passforge(char *pass, size_t pass_len, unsigned char *salt,
+                size_t salt_len, int iterations, int length,
+                double *elapsed_seconds, bool use_sha256) {
+
+    time_t start, end;
+    if (elapsed_seconds) {
+        start = time(NULL);
+        *elapsed_seconds = 0;
+    }
+
+    int bytes = (int) ceil((double)length * 3 / 4);
+    if (bytes <= 0) {
+        fprintf(stderr, "error: cannot derive %d bytes\n", bytes);
+        return NULL;
+    }
+
+    unsigned char *dKey = malloc(bytes);
+    if (!dKey) {
+        fprintf(stderr, "error: failed to allocate memory for result\n");
+        return NULL;
+    }
+
+    int res;
+    if (use_sha256) {
+        res = pbkdf2_sha256(pass, pass_len, salt, salt_len, iterations, bytes,
+                            dKey);
+    } else {
+        res = pbkdf2_sha1(pass, pass_len, salt, salt_len, iterations, bytes,
+                          dKey);
+    }
+    if (res) {
+        fprintf(stderr, "error: pbkdf2 failed\n");
+        return NULL;
+    }
+
+    char *output = base64_encode(dKey, bytes);
+    if (!output) {
+        fprintf(stderr, "error: failed to base64 encode result\n");
+        return NULL;
+    }
+
+#if DEBUG
+    print_hex(dKey, bytes);
+#endif
+
+    // truncate to length
+    if (strlen(output) > length) {
+        output[length] = '\0';
+    }
+
+    if (elapsed_seconds) {
+        end = time(NULL);
+        *elapsed_seconds = difftime(end, start);
+    }
+
+    return output;
+}
+
 int main(int argc, char **argv) {
     if (argc < 3) {
         fprintf(stderr,
@@ -130,17 +189,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    int bytes = (int) ceil((double)length * 3 / 4);
-    if (bytes <= 0) {
-        fprintf(stderr, "error: would have derived %d bytes\n", bytes);
-        exit(12);
-    }
-
-    unsigned char *dKey = malloc(bytes);
-    if (!dKey) {
-        err(9, "failed to allocate memory for result");
-    }
-
     char *passbuf = getpass("master password: ");
     if (!passbuf) {
         err(10, "getpass");
@@ -150,39 +198,15 @@ int main(int argc, char **argv) {
         err(11, "strdup");
     }
 
+    bool use_sha256 = true;
+
     int passlen = strlen(pass);
-    int res = pbkdf2_sha1(pass, passlen, salt, salt_len, ic, bytes, dKey);
-    if (res) {
-        fprintf(stderr, "ERROR\n");
-        return res;
-    }
+    double elapsed = 0;
+    char *output = passforge(pass, passlen, salt, salt_len, ic, length,
+                             &elapsed, use_sha256);
 
-    int as_hex = 0;
-    if (as_hex) {
-        /* print as hex */
-        print_hex(dKey, bytes);
-    } else {
-#if DEBUG
-        print_hex(dKey, bytes);
-#endif
-        char *output = base64_encode(dKey, bytes);
-        if (!output) {
-            err(13, "failed to get output buffer");
-        }
-
-        /* truncate to length */
-        if (strlen(output) > length) {
-            output[length] = '\0';
-        }
-
-#if DEBUG
-        print_hex((unsigned char *)output, length);
-#endif
-
-        printf("%s\n", output);
-    }
-
+    printf("%s\n", output);
     return(0);
 }
 
-/* vim: set ts=4 sw=4 et tw=79 */
+/* vim: set ts=4 sw=4 et tw=79: */
