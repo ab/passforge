@@ -13,10 +13,11 @@ def generate(password, salt, iterations, length=16):
     encoded = b64encode(PBKDF2(password, salt, iterations).read(byte_len))
     return encoded[:length]
 
-LEVEL_MAP = {'low': 4096,
-             'medium': 10000,
-             'high': 25000,
-             'very high': 100000}
+LEVEL_MAP = {'very low': 10000,
+             'low': 25000,
+             'medium': 50000,
+             'high': 100000,
+             'very high': 200000}
 
 class PassForgeError(Exception):
     pass

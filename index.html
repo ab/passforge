@@ -123,10 +123,11 @@
               </div>
               strengthening factor:<br />
               <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)" style="width: 103px">
-                <option value="4097">low</option>
-                <option value="10000" selected=1>medium</option>
-                <option value="25000">high</option>
-                <option value="100000">very high</option>
+                <option value="10000">very low</option>
+                <option value="25000">low</option>
+                <option value="50000" selected=1>medium</option>
+                <option value="100000">high</option>
+                <option value="200000">very high</option>
                 <option value="custom">custom</option>
               </select>
               <input type="text" id="iterations" name="iterations" value="10000" disabled=1 style="width: 103px" />
