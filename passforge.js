@@ -12,6 +12,8 @@ passforge.config = function(length, iterations, status_callback, result_callback
     passforge.require_digits = false; // TODO (notimplemented)
     passforge.status_callback = status_callback;
     passforge.result_callback = result_callback;
+    // passforge.hmac = sjcl.misc.hmac_sha1;
+    passforge.hmac = sjcl.misc.hmac_sha256;
 
     if (typeof(sjcl) == 'undefined') {
         throw ReferenceError('Failed to load SJCL library.');
@@ -57,14 +59,14 @@ passforge.pwgen = function(master, nickname, asynchronous) {
 
         // derive key with PBKDF2 asynchronously
         var p = new sjcl.misc.pbkdf2async(master, salt, passforge.iterations,
-                bytes * 8, sjcl.misc.hmac_sha1, passforge.status_callback,
+                bytes * 8, passforge.hmac, passforge.status_callback,
                 result_handler);
         return p.deriveKey();
 
     } else {
         // derive key with PBKDF2
         var derivedKey = sjcl.misc.pbkdf2(master, salt, passforge.iterations,
-                                   bytes * 8, sjcl.misc.hmac_sha1);
+                                   bytes * 8, passforge.hmac);
 
         var elapsed = (new Date() - start) / 1000;
 
