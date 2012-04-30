@@ -5,6 +5,7 @@ import sys
 from base64 import b64encode
 from datetime import datetime
 from getpass import getpass
+
 from pbkdf2 import PBKDF2
 
 def generate(password, salt, iterations, length=16):
@@ -99,7 +100,7 @@ class PassForge(object):
 
             print self.pwgen(nickname)
 
-    def run_batch():
+    def run_batch(self):
         print self.pwgen(self.nickname)
 
     def run(self):
