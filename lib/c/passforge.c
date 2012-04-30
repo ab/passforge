@@ -91,7 +91,6 @@ int pbkdf2(char *pass, size_t pass_len, unsigned char *salt, size_t salt_len,
 int pbkdf2_sha1(char *pass, size_t pass_len, unsigned char *salt,
                 size_t salt_len, int iterations, int bytes,
                 unsigned char *result) {
-    OpenSSL_add_all_algorithms();
     const EVP_MD *md = EVP_sha1();
     return pbkdf2(pass, pass_len, salt, salt_len, iterations, md, bytes,
                   result);
@@ -100,7 +99,6 @@ int pbkdf2_sha1(char *pass, size_t pass_len, unsigned char *salt,
 int pbkdf2_sha256(char *pass, size_t pass_len, unsigned char *salt,
                   size_t salt_len, int iterations, int bytes,
                   unsigned char *result) {
-    OpenSSL_add_all_algorithms();
     const EVP_MD *md = EVP_sha256();
     return pbkdf2(pass, pass_len, salt, salt_len, iterations, md, bytes,
                   result);
