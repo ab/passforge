@@ -15,6 +15,28 @@ libraries used:
         https://github.com/emerose/pbkdf2-ruby
             (some good discussion of PBKDF2)
 
+FAQ
+    Q: How should I pick a master passphrase?
+    A: You should choose a master passphrase with high entropy, since this will
+       limit the entropy of the generated passwords. Diceware and pwgen(1) are
+       good options.
+
+    Q: What if I forget the master passphrase?
+    A: There is no way to recover the master passphrase short of brute force.
+
+    Q: How will I remember all the different nicknames? What if I want to
+       change my master passphrase? Isn't this another management problem?
+    A: It should be fine to write down the nicknames and some reminder of which
+       master passphrase you used. The security depends on the master
+       passphrase itself.
+
+    Q: Is it safe to enter the master passphrase on a public computer?
+    A: Personally, I wouldn't. Only do this if you'd be comfortable typing in
+       *all* of your generated passwords on that computer.
+
+    Q: I have another question.
+    A: That's not a question. Send inquiries to passforge@agb.me.
+
 PBKDF2 nitty gritty
     how many iterations to use?
         as many as you can stand
