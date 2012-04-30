@@ -16,6 +16,7 @@
 
 #include <openssl/opensslv.h>
 #include <openssl/evp.h>
+#include <openssl/bio.h>
 
 void print_hex(unsigned char *buf, int len) {
     printf("0x");
@@ -98,7 +99,18 @@ int main(int argc, char **argv) {
         return res;
     }
 
-    print_hex(result, length);
+    int as_hex = 0;
+    if (as_hex) {
+        print_hex(result, length);
+    } else {
+        BIO *bio, *b64;
+        b64 = BIO_new(BIO_f_base64());
+        bio = BIO_new_fp(stdout, BIO_NOCLOSE);
+        bio = BIO_push(b64, bio);
+        BIO_write(bio, result, length);
+        (void) BIO_flush(bio); // cast to avoid compiler warning
+        BIO_free_all(bio);
+    }
 
     return(0);
 }

@@ -1,8 +1,8 @@
-- base64 encode output
 - switch to sha256 / make configurable
 - use getopt or similar to parse arguments
     http://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html#Using-Getopt
     getopt(3)
+    http://www.gnu.org/software/libc/manual/html_node/Parsing-Program-Arguments.html
 - allow specifying password file
 - batch vs. interactive mode
 - man page?
