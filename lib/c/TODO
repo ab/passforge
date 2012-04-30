@@ -1,0 +1,6 @@
+- use getopt or similar to parse arguments
+    http://www.gnu.org/software/libc/manual/html_node/Using-Getopt.html#Using-Getopt
+    getopt(3)
+- allow specifying password file
+- batch vs. interactive mode
+- man page?
