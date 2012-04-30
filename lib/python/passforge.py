@@ -8,9 +8,34 @@ from getpass import getpass
 
 from pbkdf2 import PBKDF2
 
-def generate(password, salt, iterations, length=16):
+try:
+    # Use PyCrypto (if available).
+    from Crypto.Hash import HMAC, SHA as SHA1, SHA256
+except ImportError:
+    # PyCrypto not available. Use the Python standard library.
+    # Versions < 2.5 are not supported.
+    import hmac as HMAC
+    import hashlib
+
+    class SHA1(object):
+        new = hashlib.sha1
+        digest_size = 20
+
+    class SHA256(object):
+        new = hashlib.sha256
+        digest_size = 32
+
+def generate(password, salt, iterations, length=16, use_sha256=True):
     byte_len = int(math.ceil(length * 3 / 4.))
-    encoded = b64encode(PBKDF2(password, salt, iterations).read(byte_len))
+
+    if use_sha256:
+        dm = SHA256
+    else:
+        dm = SHA1
+
+    dKey = PBKDF2(password, salt, iterations, digestmodule=dm).read(byte_len)
+    encoded = b64encode(dKey)
+
     return encoded[:length]
 
 LEVEL_MAP = {'very low': 10000,
