@@ -57,6 +57,10 @@ class PassForge(object):
 
         self.verbose = opts.verbose
 
+        self.use_sha256 = True
+        if opts.sha256 is not None:
+            self.use_sha256 = opts.sha256
+
         self.password = None
         if opts.pass_file:
             if opts.pass_file == '-':
@@ -107,7 +111,8 @@ class PassForge(object):
     def pwgen(self, nickname):
         start = datetime.now()
 
-        key = generate(self.password, nickname, self.iterations, self.length)
+        key = generate(self.password, nickname, self.iterations, self.length,
+                       self.use_sha256)
 
         elapsed = datetime.now() - start
         secs = elapsed.seconds + elapsed.microseconds / 1000000.
@@ -154,6 +159,11 @@ if __name__ == '__main__':
                  type='int', help='length of generated password')
     p.add_option('-b', '--batch', dest='batch', action='store_true',
                  help="non-interactive mode")
+
+    p.add_option('-1', '--sha1', dest='sha256', action='store_false',
+                 help='use hmac-sha1')
+    p.add_option('-2', '--sha256', dest='sha256', action='store_true',
+                 help='use hmac-sha256 (default)')
 
     p.add_option('-q', '--quiet', dest='verbose', action='store_false',
                  default=True, help='be less verbose')
