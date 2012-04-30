@@ -116,7 +116,7 @@ if __name__ == '__main__':
               'options not given will be prompted interactively'
 
     p.add_option('-p', '--password-file', dest='pass_file', metavar='FILE',
-                 help='read password from FILE')
+                 help='read master password from FILE')
     p.add_option('-n', '--nickname', dest='nickname', metavar='TEXT',
                  help='per-site nickname used to determine unique password')
     p.add_option('-i', '--iterations', dest='iterations', metavar='NUM',
