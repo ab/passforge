@@ -19,7 +19,6 @@
 #include <openssl/bio.h>
 
 void print_hex(unsigned char *buf, int len) {
-    printf("0x");
     for (int i=0; i<len; i++) {
         printf("%02x",(unsigned int) buf[i]);
     }
@@ -29,18 +28,23 @@ void print_hex(unsigned char *buf, int len) {
 int pbkdf2(char *pass, size_t pass_len, unsigned char *salt, size_t salt_len,
            int iterations, const EVP_MD *digest, int bytes, unsigned char *result) {
     if (!pass) {
+        fprintf(stderr, "no passphrase given\n");
         return 2;
     }
     if (!salt) {
+        fprintf(stderr, "no salt given\n");
         return 3;
     }
     if (!result) {
+        fprintf(stderr, "no result pointer given\n");
         return 4;
     }
     if (!digest) {
+        fprintf(stderr, "no HMAC function given\n");
         return 5;
     }
     if (iterations <= 0) {
+        fprintf(stderr, "iterations must be > 0\n");
         return 6;
     }
 
@@ -67,7 +71,7 @@ int pbkdf2_sha256(char *pass, size_t pass_len, unsigned char *salt, size_t salt_
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
+    if (argc < 3) {
         fprintf(stderr,
                 "usage: %s [options] nickname iterations [length]\n",
                 argv[0]);
@@ -78,24 +82,37 @@ int main(int argc, char **argv) {
     int salt_len = strlen(argv[1]);
 
     int ic = atoi(argv[2]);
+    if (ic <= 0) {
+        fprintf(stderr, "error: iterations must be > 0\n");
+        exit(7);
+    }
+
+    int length = 16;
+    if (argc > 3) {
+        length = atoi(argv[3]);
+        if (length <= 0) {
+            fprintf(stderr, "error: length must be > 0\n");
+            exit(8);
+        }
+    }
+
+    unsigned char *result = malloc(length);
+    if (!result) {
+        err(9, "failed to allocate memory for result");
+    }
 
     char *passbuf = getpass("master password: ");
     if (!passbuf) {
-        err(2, "getpass");
+        err(10, "getpass");
     }
     char *pass = strdup(passbuf);
     if (!pass) {
-        err(3, "strdup");
-    }
-
-    int length = 32;
-    unsigned char *result = malloc(length);
-    if (!result) {
-        err(4, "failed to allocate memory for result");
+        err(11, "strdup");
     }
 
     int res = pbkdf2_sha1(pass, strlen(pass), salt, salt_len, ic, length, result);
     if (res) {
+        fprintf(stderr, "ERROR\n");
         return res;
     }
 
