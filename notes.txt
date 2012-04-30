@@ -37,6 +37,10 @@ FAQ
     Q: I have another question.
     A: That's not a question. Send inquiries to passforge@agb.me.
 
+    Q: Do you have test vectors?
+    A: Tested against the hmac-sha1 vectors.
+       TODO: http://stackoverflow.com/questions/5130513/pbkdf2-hmac-sha2-test-vectors
+
 PBKDF2 nitty gritty
     how many iterations to use?
         as many as you can stand
