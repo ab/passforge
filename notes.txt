@@ -35,7 +35,7 @@ FAQ
        *all* of your generated passwords on that computer.
 
     Q: I have another question.
-    A: That's not a question. Send inquiries to passforge@agb.me.
+    A: That's not a question. Feedback is welcome at passforge@agb.me.
 
     Q: Do you have test vectors?
     A: Tested against the hmac-sha1 vectors.
