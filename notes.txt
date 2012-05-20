@@ -1,3 +1,11 @@
+pbkdf2 to bcrypt correspondences:
+    4097 ~ 11
+    10000 ~ 12
+    26000 ~ 13
+    55000 ~ 14
+    115000 ~ 15
+
+
 libraries used:
     JS:
         SJCL
