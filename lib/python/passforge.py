@@ -1,51 +1,40 @@
 #!/usr/bin/env python
-import math
 import optparse
 import sys
-from base64 import b64encode
 from datetime import datetime
 from getpass import getpass
 
-from pbkdf2 import PBKDF2
+import bcrypt
 
-try:
-    # Use PyCrypto (if available).
-    from Crypto.Hash import HMAC, SHA as SHA1, SHA256
-except ImportError:
-    # PyCrypto not available. Use the Python standard library.
-    # Versions < 2.5 are not supported.
-    import hmac as HMAC
-    import hashlib
+SALT_PADDING = 'passforgepassfor'
+SALT_LENGTH = 16
 
-    class SHA1(object):
-        new = hashlib.sha1
-        digest_size = 20
-
-    class SHA256(object):
-        new = hashlib.sha256
-        digest_size = 32
-
-def generate(password, salt, iterations, length=16, use_sha256=True):
-    byte_len = int(math.ceil(length * 3 / 4.))
-
-    if use_sha256:
-        dm = SHA256
-    else:
-        dm = SHA1
-
-    dKey = PBKDF2(password, salt, iterations, digestmodule=dm).read(byte_len)
-    encoded = b64encode(dKey)
-
-    return encoded[:length]
-
-LEVEL_MAP = {'very low': 10000,
-             'low': 25000,
-             'medium': 50000,
-             'high': 100000,
-             'very high': 200000}
+LEVEL_MAP = {'very low': 12,
+             'low': 13,
+             'medium': 14,
+             'high': 15,
+             'very high': 16}
 
 class PassForgeError(Exception):
     pass
+
+def pad_salt(salt):
+    """Pad salt to SALT_LENGTH characters using SALT_PADDING."""
+    return salt + SALT_PADDING[:SALT_LENGTH-len(salt)]
+
+def generate(password, salt, log_rounds, length=16):
+    salt = pad_salt(salt)
+    bsalt = bcrypt.encode_salt(salt, log_rounds)
+    hashed = bcrypt.hashpw(password, bsalt)
+
+    derived = hashed[len(bsalt):]
+
+    if len(derived) < length:
+        raise PassForgeError('maximum generated length is %d' % len(derived))
+    if length < 0:
+        raise PassForgeError('minimum generated length is 0')
+
+    return derived[:length]
 
 class PassForge(object):
     def __init__(self, opts, interactive=True):
@@ -56,10 +45,6 @@ class PassForge(object):
         self.nickname = opts.nickname
 
         self.verbose = opts.verbose
-
-        self.use_sha256 = True
-        if opts.sha256 is not None:
-            self.use_sha256 = opts.sha256
 
         self.password = None
         if opts.pass_file:
@@ -111,8 +96,7 @@ class PassForge(object):
     def pwgen(self, nickname):
         start = datetime.now()
 
-        key = generate(self.password, nickname, self.iterations, self.length,
-                       self.use_sha256)
+        key = generate(self.password, nickname, self.iterations, self.length)
 
         elapsed = datetime.now() - start
         secs = elapsed.seconds + elapsed.microseconds / 1000000.
@@ -159,11 +143,6 @@ if __name__ == '__main__':
                  type='int', help='length of generated password')
     p.add_option('-b', '--batch', dest='batch', action='store_true',
                  help="non-interactive mode")
-
-    p.add_option('-1', '--sha1', dest='sha256', action='store_false',
-                 help='use hmac-sha1')
-    p.add_option('-2', '--sha256', dest='sha256', action='store_true',
-                 help='use hmac-sha256 (default)')
 
     p.add_option('-q', '--quiet', dest='verbose', action='store_false',
                  default=True, help='be less verbose')
