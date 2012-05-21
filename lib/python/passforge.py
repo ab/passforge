@@ -6,7 +6,6 @@ from getpass import getpass
 
 import bcrypt
 
-SALT_PADDING = 'passforgepassfor'
 SALT_LENGTH = 16
 
 LEVEL_MAP = {'very low': 12,
@@ -15,17 +14,36 @@ LEVEL_MAP = {'very low': 12,
              'high': 15,
              'very high': 16}
 
+DEBUG = False
+
+try:
+    from hashlib import sha1
+except ImportError:
+    from sha import sha as sha1
+
 class PassForgeError(Exception):
     pass
 
-def pad_salt(salt):
-    """Pad salt to SALT_LENGTH characters using SALT_PADDING."""
-    return salt + SALT_PADDING[:SALT_LENGTH-len(salt)]
+def salt_from_nickname(nick):
+    """
+    Create a suitable salt from the user-supplied nickname.
 
-def generate(password, salt, log_rounds, length=16):
-    salt = pad_salt(salt)
+    We are using truncated SHA1, but note that the cryptographic properties of
+    this function are actually not important. All we care about is that the
+    output length be SALT_LENGTH and that the output be unlikely to collide
+    with other commonly used nicknames.
+    """
+    digest = sha1(nick).digest()
+    assert len(digest) >= SALT_LENGTH
+    return digest[:SALT_LENGTH]
+
+def generate(password, nickname, log_rounds, length=16):
+    salt = salt_from_nickname(nickname)
     bsalt = bcrypt.encode_salt(salt, log_rounds)
+    if DEBUG: print 'bcrypt salt:', bsalt
+
     hashed = bcrypt.hashpw(password, bsalt)
+    if DEBUG: print 'hashed:', hashed
 
     derived = hashed[len(bsalt):]
 
@@ -40,7 +58,7 @@ class PassForge(object):
     def __init__(self, opts, interactive=True):
         self.opts = opts
         self.interactive = interactive
-        self.iterations = opts.iterations
+        self.rounds = opts.rounds
         self.length = opts.length
         self.nickname = opts.nickname
 
@@ -58,14 +76,14 @@ class PassForge(object):
 
         if opts.strengthening:
             try:
-                self.iterations = LEVEL_MAP[opts.strengthening]
+                self.rounds = LEVEL_MAP[opts.strengthening]
             except KeyError:
                 print 'Valid strengthening levels:', LEVEL_MAP
                 raise PassForgeError('Invalid strengthening level')
 
         if interactive:
-            if not self.iterations:
-                self.iterations = int(raw_input('iterations: '))
+            if not self.rounds:
+                self.rounds = int(raw_input('rounds: '))
 
             if not opts.pass_file:
                 self.password = getpass('master password: ')
@@ -77,8 +95,8 @@ class PassForge(object):
             if not self.password:
                 raise PassForgeError('Must provide password file')
 
-            if not self.iterations:
-                raise PassForgeError('Must provide iterations / strengthening')
+            if not self.rounds:
+                raise PassForgeError('Must provide rounds / strengthening')
 
             if not self.nickname:
                 raise PassForgeError('Must provide nickname')
@@ -96,7 +114,7 @@ class PassForge(object):
     def pwgen(self, nickname):
         start = datetime.now()
 
-        key = generate(self.password, nickname, self.iterations, self.length)
+        key = generate(self.password, nickname, self.rounds, self.length)
 
         elapsed = datetime.now() - start
         secs = elapsed.seconds + elapsed.microseconds / 1000000.
@@ -134,10 +152,10 @@ if __name__ == '__main__':
                  help='read master password from FILE')
     p.add_option('-n', '--nickname', dest='nickname', metavar='TEXT',
                  help='per-site nickname used to determine unique password')
-    p.add_option('-i', '--iterations', dest='iterations', metavar='NUM',
-                 type='int', help='number of PBKDF2 iterations')
+    p.add_option('-r', '--rounds', dest='rounds', metavar='NUM',
+                 type='int', help='number of bcrypt log rounds')
     p.add_option('-s', '--strengthening', dest='strengthening',
-                 metavar='LEVEL', help='number of iterations by description',
+                 metavar='LEVEL', help='number of log rounds by description',
                  choices=list(LEVEL_MAP.keys()))
     p.add_option('-l', '--length', dest='length', metavar='LENGTH',
                  type='int', help='length of generated password')
@@ -146,8 +164,13 @@ if __name__ == '__main__':
 
     p.add_option('-q', '--quiet', dest='verbose', action='store_false',
                  default=True, help='be less verbose')
+    p.add_option('-d', '--debug', dest='debug', action='store_true',
+                 default=False, help='enable debug mode')
 
     opts, args = p.parse_args()
+
+    if opts.debug:
+        DEBUG = True
 
     interactive = not opts.batch
 
