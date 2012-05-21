@@ -146,7 +146,7 @@ if __name__ == '__main__':
     p = optparse.OptionParser()
 
     p.usage = '%prog [options]\n' + \
-              'options not given will be prompted interactively'
+              'Options not given will be prompted interactively.'
 
     p.add_option('-p', '--password-file', dest='pass_file', metavar='FILE',
                  help='read master password from FILE')
