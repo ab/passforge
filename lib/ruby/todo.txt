@@ -1,1 +1,0 @@
-- two libraries, one a C wrapper of openssl, the other a ruby pbkdf2 implementation
