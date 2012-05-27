@@ -55,9 +55,9 @@ def generate(password, nickname, log_rounds, length=16):
     return derived[:length]
 
 class PassForge(object):
-    def __init__(self, opts, interactive=True):
+    def __init__(self, opts):
         self.opts = opts
-        self.interactive = interactive
+        self.interactive = opts.interactive
         self.rounds = opts.rounds
         self.length = opts.length
         self.nickname = opts.nickname
@@ -81,7 +81,7 @@ class PassForge(object):
                 print 'Valid strengthening levels:', LEVEL_MAP
                 raise PassForgeError('Invalid strengthening level')
 
-        if interactive:
+        if self.interactive:
             if not self.rounds:
                 self.rounds = int(raw_input('rounds: '))
 
@@ -159,8 +159,8 @@ if __name__ == '__main__':
                  choices=list(LEVEL_MAP.keys()))
     p.add_option('-l', '--length', dest='length', metavar='LENGTH',
                  type='int', help='length of generated password')
-    p.add_option('-b', '--batch', dest='batch', action='store_true',
-                 help="non-interactive mode")
+    p.add_option('-b', '--batch', dest='interactive', action='store_false',
+                 default=True, help="non-interactive mode")
 
     p.add_option('-q', '--quiet', dest='verbose', action='store_false',
                  default=True, help='be less verbose')
@@ -172,10 +172,8 @@ if __name__ == '__main__':
     if opts.debug:
         DEBUG = True
 
-    interactive = not opts.batch
-
     try:
-        pf = PassForge(opts, interactive)
+        pf = PassForge(opts)
         pf.run()
     except PassForgeError, e:
         sys.stderr.write('ERROR: ' + e.args[0] + '\n')

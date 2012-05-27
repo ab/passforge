@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 require 'digest/sha1'
+require 'optparse'
+
 require 'bcrypt'
 
 $DEBUG = true
@@ -44,15 +46,35 @@ module Passforge
                  'high' => 15,
                  'very high' => 16}
 
-    def initialize
+    def initialize(opts={})
       raise NotImplementedError
 
+      @verbose = opts[:verbose]
+
+      if opts[:password_file] == '-'
+        f = STDIN
+        vprint('reading password from first line of STDIN')
+      else
+        f = File.open(opts[:password_file], 'r')
+        vprint('reading password from first line of ' + f.path.inspect)
+      end
     end
 
-    def self.debug(message)
-      STDERR.puts message if $DEBUG
+    def vprint(message=nil, &blk)
+      return unless @verbose
+      if block_given?
+        message = yield
+      end
+      STDERR.puts message
     end
 
+    def self.debug(message=nil, &blk)
+      return unless $DEBUG
+      if block_given?
+        message = yield
+      end
+      STDERR.puts message
+    end
 
     # Create a suitable salt from the user-supplied nickname.
     #
@@ -69,10 +91,10 @@ module Passforge
     def self.generate(password, nickname, log_rounds, length=16)
       salt = salt_from_nickname(nickname)
       bsalt = OurBEngine.encode_salt(log_rounds, salt)
-      debug "bcrypt salt: #{bsalt}"
+      debug { "bcrypt salt: #{bsalt}" }
 
       hashed = BCrypt::Engine.hash_secret(password, bsalt)
-      debug "hashed: #{hashed}"
+      debug { "hashed: #{hashed}" }
 
       derived = hashed[bsalt.length..-1]
 
@@ -88,3 +110,70 @@ module Passforge
   end
 end
 
+def main
+  options = {}
+
+  options[:interactive] = true
+  options[:verbose] = true
+
+  optparse = OptionParser.new do |opts|
+    opts.banner = <<-EOM
+Usage: #{File.basename($0)} [options]
+Options not given will be prompted interactively except in batch mode.
+
+Options:
+    EOM
+
+    opts.on('-h', '--help', 'show this help message and exit') do
+      puts opts
+      return 0
+    end
+
+    opts.on('-p', '--password-file FILE',
+            'read master password from FILE') do |filename|
+      options[:password_file] = file
+    end
+    opts.on('-n', '--nickname TEXT',
+            'per-site nickname used to determine unique password') do |nick|
+      options[:nickname] = nick
+    end
+    opts.on('-r', '--rounds NUM', 'number of bcrypt rounds (2^NUM)') do |num|
+      options[:rounds] = num
+    end
+    opts.on('-s', '--strengthening LEVEL',
+            'number of bcrypt rounds by description') do |level|
+      options[:strengthening] = level
+    end
+    opts.on('-l', '--length LENGTH', 'length of generated password') do |len|
+      options[:length] = len
+    end
+    opts.on('-b', '--batch', 'non-interactive mode') do
+      options[:interactive] = false
+    end
+
+    opts.on('-q', '--quiet', 'be less verbose') do
+      options[:verbose] = false
+    end
+    opts.on('-d', '--debug', 'enable debug mode') do
+      options[:debug] = true
+    end
+  end
+
+  optparse.parse!
+
+  pf = Passforge::Passforge.new(options)
+  pf.run
+
+  return 0
+end
+
+if $0 == __FILE__
+  puts 'lala'
+  ret = main
+  puts ret
+  begin
+    exit(ret)
+  rescue TypeError
+    exit(0)
+  end
+end
