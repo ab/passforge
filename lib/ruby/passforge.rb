@@ -1,4 +1,13 @@
 #!/usr/bin/env ruby
+# Passforge provides an algorithm for generating good passwords from a unique
+# salt and a master passphrase. This is the official ruby implementation.
+#
+# Author::    Andy Brody <abrody@abrody.com>
+# Copyright:: 2012
+# License::   GNU General Public License version 3
+#
+# Dependencies: bcrypt-ruby <http://bcrypt-ruby.rubyforge.org/>
+
 require 'digest/sha1'
 require 'optparse'
 
@@ -10,17 +19,23 @@ module Passforge
   # The BCrypt library doesn't expose a way to correctly encode a user-provided
   # salt, so we access the private method. This may be unsafe.
   class OurBEngine < BCrypt::Engine
-    def self.encode_salt(cost, bytes)
-      # __bc_salt comes with this comment in the BCrypt source:
-      # """
-      # C-level routines which, if they don't get the right input, will crash
-      # the hell out of the Ruby process.
-      # """
-      #
-      # We try to validate our inputs so it is safe. This should really be done
-      # in the BCrypt module instead.
-      if not cost.is_a? Fixnum
-        raise ArgumentError.new('cost must be a Fixnum')
+
+    # Encode given bytes as a salt string that can be passed to hash_secret.
+    # This mirrors the API provided by python-bcrypt's encode_salt.
+    #
+    # @param [Fixnum] log_rounds The log2(rounds) for bcrypt.
+    # @param [String] bytes The salt as a string of bytes.
+    #
+    # __bc_salt comes with this comment in the BCrypt source:
+    # """
+    # C-level routines which, if they don't get the right input, will crash
+    # the hell out of the Ruby process.
+    # """
+    # We try to validate our inputs so it is safe. This should really be done
+    # in the BCrypt module instead.
+    def self.encode_salt(log_rounds, bytes)
+      if not log_rounds.is_a? Fixnum
+        raise ArgumentError.new('log_rounds must be a Fixnum')
       end
       if not bytes.is_a? String
         raise ArgumentError.new('bytes must be a String')
@@ -30,14 +45,61 @@ module Passforge
         raise ArgumentError.new(msg)
       end
 
-      __bc_salt(cost, bytes)
+      __bc_salt(log_rounds, bytes)
     end
   end
 
   class Error < StandardError; end
   class InvalidLength < Error; end
 
-  class Passforge
+  def self.debug(message=nil, &blk)
+    return unless $DEBUG
+    if block_given?
+      message = yield
+    end
+    STDERR.puts message
+  end
+
+  # Create a suitable salt from the user-supplied nickname.
+  #
+  # We are using truncated SHA1, but note that the cryptographic properties
+  # of this function are actually not important. All we care about is that
+  # the output length be SALT_LENGTH and that the output be unlikely to
+  # collide with other commonly used nicknames.
+  def self.salt_from_nickname(nick)
+    digest = Digest::SHA1.digest(nick)
+    raise Error.new('assertion failed') unless digest.length >= SALT_LENGTH
+    return digest[0...SALT_LENGTH]
+  end
+
+  # Generate a password using bcrypt.
+  #
+  # @param [String] passphrase The master passphrase.
+  # @param [String] nickname A unique label used to make the password unique.
+  # @param [Fixnum] log_rounds The number of rounds of bcrypt to run.
+  # @param [Fixnum] length The length of the generated password. Range: 0 to 31.
+  # @return [String] A generated password resistant to brute force attacks.
+  def self.generate(passphrase, nickname, log_rounds, length=16)
+    salt = salt_from_nickname(nickname)
+    bsalt = OurBEngine.encode_salt(salt, log_rounds)
+    debug { "bcrypt salt: #{bsalt}" }
+
+    hashed = BCrypt::Engine.hash_secret(passphrase, bsalt)
+    debug { "hashed: #{hashed}" }
+
+    derived = hashed[bsalt.length..-1]
+
+    if derived.length < length
+      raise InvalidLength.new("maximum generated length is #{derived.length}")
+    end
+    if length < 0
+      raise InvalidLength.new('minimum generated length is 0')
+    end
+
+    return derived[0...length]
+  end
+
+  class Generator
     SALT_LENGTH = 16
 
     LEVEL_MAP = {'very low' => 12,
@@ -67,110 +129,69 @@ module Passforge
       end
       STDERR.puts message
     end
-
-    def self.debug(message=nil, &blk)
-      return unless $DEBUG
-      if block_given?
-        message = yield
-      end
-      STDERR.puts message
-    end
-
-    # Create a suitable salt from the user-supplied nickname.
-    #
-    # We are using truncated SHA1, but note that the cryptographic properties
-    # of this function are actually not important. All we care about is that
-    # the output length be SALT_LENGTH and that the output be unlikely to
-    # collide with other commonly used nicknames.
-    def self.salt_from_nickname(nick)
-      digest = Digest::SHA1.digest(nick)
-      raise Error.new('assertion failed') unless digest.length >= SALT_LENGTH
-      return digest[0...SALT_LENGTH]
-    end
-
-    def self.generate(password, nickname, log_rounds, length=16)
-      salt = salt_from_nickname(nickname)
-      bsalt = OurBEngine.encode_salt(log_rounds, salt)
-      debug { "bcrypt salt: #{bsalt}" }
-
-      hashed = BCrypt::Engine.hash_secret(password, bsalt)
-      debug { "hashed: #{hashed}" }
-
-      derived = hashed[bsalt.length..-1]
-
-      if derived.length < length
-        raise InvalidLength.new("maximum generated length is #{derived.length}")
-      end
-      if length < 0
-        raise InvalidLength.new('minimum generated length is 0')
-      end
-
-      return derived[0...length]
-    end
   end
-end
 
-def main
-  options = {}
+  def self.main
+    options = {}
 
-  options[:interactive] = true
-  options[:verbose] = true
+    options[:interactive] = true
+    options[:verbose] = true
 
-  optparse = OptionParser.new do |opts|
-    opts.banner = <<-EOM
+    optparse = OptionParser.new do |opts|
+      opts.banner = <<-EOM
 Usage: #{File.basename($0)} [options]
 Options not given will be prompted interactively except in batch mode.
 
 Options:
-    EOM
+      EOM
 
-    opts.on('-h', '--help', 'show this help message and exit') do
-      puts opts
-      return 0
+      opts.on('-h', '--help', 'show this help message and exit') do
+        puts opts
+        return 0
+      end
+
+      opts.on('-p', '--password-file FILE',
+              'read master password from FILE') do |filename|
+        options[:password_file] = file
+      end
+      opts.on('-n', '--nickname TEXT',
+              'per-site nickname used to determine unique password') do |nick|
+        options[:nickname] = nick
+      end
+      opts.on('-r', '--rounds NUM', 'number of bcrypt rounds (2^NUM)') do |num|
+        options[:rounds] = num
+      end
+      opts.on('-s', '--strengthening LEVEL',
+              'number of bcrypt rounds by description') do |level|
+        options[:strengthening] = level
+      end
+      opts.on('-l', '--length LENGTH', 'length of generated password') do |len|
+        options[:length] = len
+      end
+      opts.on('-b', '--batch', 'non-interactive mode') do
+        options[:interactive] = false
+      end
+
+      opts.on('-q', '--quiet', 'be less verbose') do
+        options[:verbose] = false
+      end
+      opts.on('-d', '--debug', 'enable debug mode') do
+        options[:debug] = true
+      end
     end
 
-    opts.on('-p', '--password-file FILE',
-            'read master password from FILE') do |filename|
-      options[:password_file] = file
-    end
-    opts.on('-n', '--nickname TEXT',
-            'per-site nickname used to determine unique password') do |nick|
-      options[:nickname] = nick
-    end
-    opts.on('-r', '--rounds NUM', 'number of bcrypt rounds (2^NUM)') do |num|
-      options[:rounds] = num
-    end
-    opts.on('-s', '--strengthening LEVEL',
-            'number of bcrypt rounds by description') do |level|
-      options[:strengthening] = level
-    end
-    opts.on('-l', '--length LENGTH', 'length of generated password') do |len|
-      options[:length] = len
-    end
-    opts.on('-b', '--batch', 'non-interactive mode') do
-      options[:interactive] = false
-    end
+    optparse.parse!
 
-    opts.on('-q', '--quiet', 'be less verbose') do
-      options[:verbose] = false
-    end
-    opts.on('-d', '--debug', 'enable debug mode') do
-      options[:debug] = true
-    end
+    g = Generator.new(options)
+    g.run
+
+    return 0
   end
-
-  optparse.parse!
-
-  pf = Passforge::Passforge.new(options)
-  pf.run
-
-  return 0
 end
 
 if $0 == __FILE__
   puts 'lala'
-  ret = main
-  puts ret
+  ret = Passforge.main
   begin
     exit(ret)
   rescue TypeError
