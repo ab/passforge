@@ -54,7 +54,7 @@ def generate(password, nickname, log_rounds, length=16):
 
     return derived[:length]
 
-class PassForge(object):
+class Generator(object):
     def __init__(self, opts):
         self.opts = opts
         self.interactive = opts.interactive
@@ -173,8 +173,8 @@ if __name__ == '__main__':
         DEBUG = True
 
     try:
-        pf = PassForge(opts)
-        pf.run()
+        g = Generator(opts)
+        g.run()
     except PassForgeError, e:
         sys.stderr.write('ERROR: ' + e.args[0] + '\n')
         sys.exit(3)
