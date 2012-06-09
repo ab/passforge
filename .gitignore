@@ -3,5 +3,3 @@
 *.swx
 *.pyc
 config.py
-etc/pbkdf2
-lib/c/passforge
