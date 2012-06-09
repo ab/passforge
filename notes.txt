@@ -5,6 +5,11 @@ pbkdf2 to bcrypt correspondences:
     55000 ~ 14
     115000 ~ 15
 
+TODO:
+    https://help.github.com/articles/user-organization-and-project-pages
+    http://javascript-bcrypt.googlecode.com/hg/test.html
+    http://bitwiseshiftleft.github.com/sjcl/demo/
+    https://agb.me/passforge/
 
 libraries used:
     JS:
