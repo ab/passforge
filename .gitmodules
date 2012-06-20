@@ -1,3 +1,0 @@
-[submodule "sjcl"]
-	path = sjcl
-	url = git://github.com/abrody/sjcl.git
