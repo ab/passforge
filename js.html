@@ -5,53 +5,45 @@
 
   <link href="./css/main.css" rel="stylesheet">
 
-  <script type="text/javascript" src="./sjcl/core/sjcl.js"></script>
-  <!-- <script type="text/javascript" src="./sjcl/core/sha1.js"></script> -->
-  <script type="text/javascript" src="./sjcl/core/sha256.js"></script>
-  <script type="text/javascript" src="./sjcl/core/codecString.js"></script>
-  <script type="text/javascript" src="./sjcl/core/codecBase64.js"></script>
-  <script type="text/javascript" src="./sjcl/core/hmac.js"></script>
-  <script type="text/javascript" src="./sjcl/core/pbkdf2.js"></script>
-  <script type="text/javascript" src="./sjcl/core/pbkdf2async.js"></script>
-  <script type="text/javascript" src="./sjcl/core/bitArray.js"></script>
-
-  <script type="text/javascript" src="./passforge.js"></script>
+  <script type="text/javascript" src="./lib/js/bCrypt.js"></script>
+  <script type="text/javascript" src="./lib/js/sha1.js"></script>
+  <script type="text/javascript" src="./lib/js/utf8.js"></script>
+  <script type="text/javascript" src="./lib/js/passforge.js"></script>
   <script type="text/javascript" src="./demo.js"></script>
 </head>
 <body>
-  <form id="form">
+  <form id="demoForm">
     <table>
       <tr>
         <td>password</td>
-        <td><input type="password" name="password" value="mypassword" /></td>
+        <td><input type="password" name="password" /></td>
       </tr>
       <tr>
         <td>nickname</td>
-        <td><input type="text" name="nickname" value="AMZN" /></td>
+        <td><input type="text" name="nickname" /></td>
       </tr>
       <tr>
         <td>strengthening factor</td>
         <td>
           <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)">
-            <option value="10000">very low</option>
-            <option value="25000">low</option>
-            <option value="50000" selected=1>medium</option>
-            <option value="100000">high</option>
-            <option value="200000">very high</option>
+            <option value="12">very low</option>
+            <option value="13" selected=1>low</option>
+            <option value="14">medium</option>
+            <option value="15">high</option>
+            <option value="16">very high</option>
             <option value="custom">custom</option>
           </select>
-          <input type="text" id="iterations" name="iterations" value="10000" disabled=1 />
+          <input type="text" id="rounds" name="rounds" value="13" disabled=1 />
         </td>
       </tr>
       <tr>
         <td>length</td>
-        <td><input type="text" name="length" value="12" /></td>
+        <td><input type="text" name="length" value="14" /></td>
       </tr>
     </table>
-    <label><input type="checkbox" name="progress" checked=1 onclick="toggle_progress(this)" />show progress</label>
 
     <br />
-    <input type="submit" name="submit" value="Create" onclick="generate(); return false" />
+    <input type="submit" id="startButton" name="submit" value="Create" onclick="generate(); return false" />
     <br /><br />
     <div id="progressContainer"><div id="progress">&nbsp;</div></div>
     <div id="status"></div>
