@@ -2,24 +2,15 @@
  * Javascript to power the HTML PassForge interface.
  */
 
-function toggle_progress(elem) {
-  var progress = document.getElementById('progressContainer');
-  if (elem.checked) {
-    //progress.style.visibility = "visible";
-    progress.style.display = "block";
-  } else {
-    //progress.style.visibility = "hidden";
-    progress.style.display = "none";
-  }
-}
-
+current_progress = 0;
 function set_progress(out_of_100) {
+  current_progress = out_of_100;
   var progress = document.getElementById('progress');
   progress.style.width = out_of_100 + "%";
 }
 
 function set_iters(elem) {
-  var iters = document.getElementById('iterations')
+  var iters = document.getElementById('rounds')
   if (elem.value == 'custom') {
     if (!iters.disabled) {
       return;
@@ -33,8 +24,9 @@ function set_iters(elem) {
   }
 }
 
-var status_callback = function(fraction_done) {
-  set_progress(fraction_done * 100);
+var status_callback = function() {
+  current_progress += 1;
+  set_progress(current_progress);
 };
 
 var result_callback = function(key, elapsed) {
@@ -86,8 +78,7 @@ function generate() {
   button.classList.add('disabled');
 
   try {
-    passforge.config(form.length.value, form.iterations.value,
-                     status_callback, result_callback);
+    passforge.config(result_callback, status_callback);
   } catch(e) {
     button.classList.remove('disabled');
     alert('ERROR: ' + e.message);
@@ -97,12 +88,14 @@ function generate() {
   // show result input
   document.getElementById('key').style.display = '';
 
-  var async = true;
-  if (form.progress) {
-      async = form.progress.checked;
+  try {
+    passforge.generate(form.password.value, form.nickname.value,
+                       form.rounds.value, form.length.value);
+  } catch(e) {
+    button.classList.remove('disabled');
+    alert('ERROR: ' + e.message);
+    return;
   }
-
-  passforge.pwgen(form.password.value, form.nickname.value, async);
 }
 
 /* vim: set ts=2 sw=2 : */

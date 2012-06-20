@@ -14,17 +14,11 @@
     <link href="./css/main.css" rel="stylesheet">
 
     <!-- scripts -->
-    <script type="text/javascript" src="./sjcl/core/sjcl.js"></script>
-    <!-- <script type="text/javascript" src="./sjcl/core/sha1.js"></script> -->
-    <script type="text/javascript" src="./sjcl/core/sha256.js"></script>
-    <script type="text/javascript" src="./sjcl/core/codecString.js"></script>
-    <script type="text/javascript" src="./sjcl/core/codecBase64.js"></script>
-    <script type="text/javascript" src="./sjcl/core/hmac.js"></script>
-    <script type="text/javascript" src="./sjcl/core/pbkdf2.js"></script>
-    <script type="text/javascript" src="./sjcl/core/pbkdf2async.js"></script>
-    <script type="text/javascript" src="./sjcl/core/bitArray.js"></script>
+    <script type="text/javascript" src="./lib/js/sha1.js"></script>
+    <script type="text/javascript" src="./lib/js/utf8.js"></script>
+    <script type="text/javascript" src="./lib/js/bCrypt.js"></script>
 
-    <script type="text/javascript" src="./passforge.js"></script>
+    <script type="text/javascript" src="./lib/js/passforge.js"></script>
     <script type="text/javascript" src="./demo.js"></script>
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -124,14 +118,14 @@
               </div>
               strengthening factor:<br />
               <select name="strengthening" onchange="set_iters(this)" onkeyup="set_iters(this)" style="width: 103px">
-                <option value="10000">very low</option>
-                <option value="25000">low</option>
-                <option value="50000" selected=1>medium</option>
-                <option value="100000">high</option>
-                <option value="200000">very high</option>
+                <option value="12">very low</option>
+                <option value="13" selected=1>low</option>
+                <option value="14">medium</option>
+                <option value="15">high</option>
+                <option value="16">very high</option>
                 <option value="custom">custom</option>
               </select>
-              <input type="text" id="iterations" name="iterations" value="10000" disabled=1 style="width: 103px" />
+              <input type="text" id="rounds" name="rounds" value="13" disabled=1 style="width: 2em" />
               <br />
             </p>
             <p>
