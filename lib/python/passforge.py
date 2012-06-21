@@ -65,14 +65,6 @@ class Generator(object):
         self.verbose = opts.verbose
 
         self.password = None
-        if opts.pass_file:
-            if opts.pass_file == '-':
-                f = sys.stdin
-            else:
-                f = open(opts.pass_file, 'r')
-
-            self.vprint('reading password from first line of %s' % f.name)
-            self.password = f.readline().rstrip('\r\n')
 
         if opts.strengthening:
             try:
@@ -92,7 +84,7 @@ class Generator(object):
                 self.length = 14
 
         else:
-            if not self.password:
+            if not opts.pass_file:
                 raise PassForgeError('Must provide password file')
 
             if not self.rounds:
@@ -103,6 +95,16 @@ class Generator(object):
 
             if not self.length:
                 raise PassForgeError('Must provide length')
+
+        if opts.pass_file:
+            if opts.pass_file == '-':
+                f = sys.stdin
+                self.vprint('reading password from first line of STDIN')
+            else:
+                f = open(opts.pass_file, 'r')
+                self.vprint('reading password from first line of %r' % f.name)
+
+            self.password = f.readline().rstrip('\r\n')
 
         if not self.password:
             raise PassForgeError('password is empty')
