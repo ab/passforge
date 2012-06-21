@@ -92,7 +92,7 @@ module Passforge
   # @param [String] passphrase The master passphrase.
   # @param [String] nickname A unique label used to make the password unique.
   # @param [Fixnum] log_rounds The number of rounds of bcrypt to run.
-  # @param [Fixnum] length The length of the generated password. Range: 0 to 31.
+  # @param [Fixnum] length The length of the generated password. Range: [0,31]
   # @return [String] A generated password resistant to brute force attacks.
   def self.generate(passphrase, nickname, log_rounds, length=16)
     salt = salt_from_nickname(nickname)
