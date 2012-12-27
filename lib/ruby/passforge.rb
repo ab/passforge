@@ -198,7 +198,7 @@ module Passforge
     def getpass(prompt)
       STDERR.print prompt
       system('stty -echo') or STDERR.puts('+ stty -echo failed')
-      pass = readline.chomp
+      pass = STDIN.readline.chomp
       system('stty echo') or STDERR.puts('+ stty echo failed')
       STDERR.puts
       return pass
@@ -240,7 +240,8 @@ module Passforge
   def self.main
     options = {}
 
-    options[:interactive] = true
+    # default to interactive iff stdin is a tty
+    options[:interactive] = true if STDIN.tty?
     options[:verbose] = true
 
     optparse = OptionParser.new do |opts|
